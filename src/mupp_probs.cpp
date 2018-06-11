@@ -39,7 +39,8 @@ NumericVector exp_ggum(NumericVector thetas,
 }
 
 // [[Rcpp::export]]
-NumericVector p_ggum(NumericVector thetas, NumericVector params){
+NumericVector p_ggum(NumericVector thetas,
+                     NumericVector params){
 
   // Arguments:
   //  - thetas: a vector of thetas across all people
@@ -61,7 +62,8 @@ NumericVector p_ggum(NumericVector thetas, NumericVector params){
 
 
 // [[Rcpp::export]]
-NumericVector pder1_theta_ggum(NumericVector thetas, NumericVector params){
+NumericVector pder1_theta_ggum(NumericVector thetas,
+                               NumericVector params){
 
   // Arguments:
   //  - thetas: a vector of thetas across all people
@@ -94,7 +96,7 @@ NumericMatrix p_mupp(NumericVector thetas_s, NumericVector thetas_t,
   //  - thetas_s/thetas_t: vectors of thetas across all people
   //  - params_s/params_t: matrices of params for all items
   // Value:
-  //  - P(s > t)(theta_ss, thetas_t) for all items
+  //  - P(s > t)(theta_s, thetas_t) for all items
 
   // declare number of items and persons
   int n_items   = std::max(params_s.nrow(), params_t.nrow());
@@ -138,7 +140,7 @@ NumericMatrix pder1_thetas_mupp_(NumericVector thetas_s, NumericVector thetas_t,
   //  - thetas_s/thetas_t: vectors of thetas across all people
   //  - params_s/params_t: matrices of params for all items
   // Value:
-  //  - dp(s > t)/dtheta(theta_ss, thetas_t) for all items
+  //  - dp(s > t)/dtheta(theta_s, thetas_t) for all items
 
   // declare number of items and persons
   int n_items   = std::max(params_s.nrow(), params_t.nrow());
@@ -183,6 +185,45 @@ NumericMatrix pder1_thetas_mupp_(NumericVector thetas_s, NumericVector thetas_t,
     }
   }
 
+  return dprobs;
+
+}
+
+
+// [[Rcpp::export]]
+List pder1_thetas_mupp(NumericVector thetas_s, NumericVector thetas_t,
+                       NumericMatrix params_s, NumericMatrix params_t) {
+
+  // Arguments:
+  //  - thetas_s/thetas_t: vectors of thetas across all people
+  //  - params_s/params_t: matrices of params for all items
+  // Value:
+  //  - [dp(s > t)/dtheta(theta_s), dp(s > t)/dtheta(thetas_t)] for all items
+
+  // vector to store der1 matrices (type_s = true and type_s = false)
+  List dprobs;
+
+  // indicate temporary storage elements
+  std::string elt;
+
+  // cycle through and add matrices to return list
+  for(int type = 1; type >= 0; type--){
+
+    // element (s OR t) for this particular item
+    if(type){
+      elt = "s";
+    } else{
+      elt = "t";
+    }
+
+    // adding partial derivative to derivative matrix
+    dprobs[elt] = pder1_thetas_mupp_(thetas_s, thetas_t,
+                                     params_s, params_t,
+                                     type);
+
+  }
+
+  // returning derivative matrices
   return dprobs;
 
 }
