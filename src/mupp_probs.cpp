@@ -4,10 +4,66 @@
  * - second derivatives of probabilities
  */
 
+/* _impl stands for either:
+ * - implicit (these functions are implicitly called in R)
+ * - implementation (these functions are the implementation in C++)
+ * - this follows Hadley convention so that no R file overwrites a C++ impl.
+ */
+
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// [[Rcpp::export]]
+// /* HELPER FUNCTIONS
+//  *   - select_cols (select non-proximate columns)
+//  */  - select_rows (select non-prosimate rows)
+NumericMatrix select_cols(NumericMatrix X,
+                          IntegerVector ind){
+
+ // Arguments:
+ //  - X:   a matrix to select columns
+ //  - ind: an integer vector of columns to select
+
+ // capturing constants
+ int out_cols = ind.size();
+
+ // declaring output
+ NumericMatrix Y(X.nrow(), out_cols);
+
+ // iterating
+ for(int i = 0; i < out_cols; i++){
+   Y(_, i) = X(_, ind[i]);
+ }
+
+  return Y;
+}
+
+NumericMatrix select_rows(NumericMatrix X,
+                          IntegerVector ind){
+
+ // Arguments:
+ //  - X:   a matrix to select columns
+ //  - ind: an integer vector of columns to select
+
+ // capturing constants
+ int out_rows = ind.size();
+
+ // declaring output
+ NumericMatrix Y(out_rows, X.cols());
+
+ // iterating
+ for(int i = 0; i < out_rows; i++){
+   Y(i, _) = X(ind[i], _);
+ }
+
+  return Y;
+}
+
+
+/* GGUM STUFF
+ *  - exp_ggum
+ *  - p_ggum/q_ggum_all
+ *  - p_der1_theta_ggum
+ */
 NumericVector exp_ggum(NumericVector thetas,
                        NumericVector params,
                        int exp_mult = 1){
@@ -35,7 +91,6 @@ NumericVector exp_ggum(NumericVector thetas,
   NumericVector exp_1 = exp(alpha * (exp_mult * (thetas - delta) - tau));
 
   return exp_1;
-
 }
 
 // [[Rcpp::export]]
@@ -57,11 +112,33 @@ NumericVector p_ggum(NumericVector thetas,
   NumericVector probs  = exp_12 / (1 + exp_12 + exp_3);
 
   return probs;
-
 }
 
-
 // [[Rcpp::export]]
+NumericVector q_ggum_all(NumericMatrix thetas,
+                         NumericMatrix params) {
+
+  // Arguments:
+  //  - thetas: a matrix of thetas across all people/dims
+  //  - params: a vector of params for one item [alpha, delta, tau]
+  // Value:
+  //  - P(Z = 0 | thetas) across all dimensions
+
+  // declare number of persons/dimensions
+  int n_persons = thetas.nrow();
+  int n_dims    = params.nrow();
+
+  // indicating return vector
+  NumericMatrix probs(n_persons, n_dims);
+
+  // calculating probabilities across all dimensions
+  for(int dim = 0; dim < n_dims; dim++){
+    probs(_, dim) = 1 - p_ggum(thetas(_, dim), params(dim, _));
+  }
+
+  return probs;
+}
+
 NumericVector pder1_theta_ggum(NumericVector thetas,
                                NumericVector params){
 
@@ -85,167 +162,150 @@ NumericVector pder1_theta_ggum(NumericVector thetas,
                          pow((1 + exp_1 + exp_2 + exp_3), 2);
 
   return dprobs;
-
 }
 
+/* MUPP STUFF
+ *   - p_mupp_pick0 - numerator (individual component) of PICK probability
+ *   - p_mupp_pick1 - OVERALL PICK probability
+ *   - p_mupp_rank1 - OVERALL RANK probability
+ *   - p_mupp_rank_impl - OVERALL RANK probability for an individual order OR
+ *                        all possible order combinations
+ */
+
 // [[Rcpp::export]]
-NumericMatrix p_mupp(NumericVector thetas_s, NumericVector thetas_t,
-                     NumericMatrix params_s, NumericMatrix params_t) {
+NumericVector p_mupp_pick0(NumericMatrix Q,
+                           int picked_dim = 1){
 
   // Arguments:
-  //  - thetas_s/thetas_t: vectors of thetas across all people
-  //  - params_s/params_t: matrices of params for all items
+  //  - Q: a vector of probability of NOT selecting each option
+  //  - picked_dim: the picked dimension
   // Value:
-  //  - P(s > t)(theta_s, thetas_t) for all items
+  //  - P(Z_s = 1 | thetas) individual element where s is the selected option
 
-  // declare number of items and persons
-  int n_items   = std::max(params_s.nrow(), params_t.nrow());
-  int n_persons = std::max(thetas_s.size(), thetas_t.size());
-  int n_params  = std::max(params_s.ncol(), params_t.ncol());
+  // declare number of persons/dimensions
+  int n_persons = Q.nrow();
+  int n_dims    = Q.ncol();
 
-  // indicate temporary storage vectors
-  NumericVector params_si(n_params),
-                params_ti(n_params),
-                p_s1(n_persons),
-                p_t0(n_persons);
+  // vectors to store stuff
+  NumericVector probs(n_persons, 1.0);
 
-  // indicate return matrix
-  NumericMatrix probs(n_persons, n_items);
-
-  // cycle through and add vectors to return matrix
-  for(int item = 0; item < n_items; item++){
-
-    // params for this specific item
-    params_si = params_s(item, _);
-    params_ti = params_t(item, _);
-
-    // probability of s/t given ggum model (can use other models?)
-    p_s1 = p_ggum(thetas_s, params_si);
-    p_t0 = 1 - p_ggum(thetas_t, params_ti);
-
-    // set probs to item column of probability matrix
-    probs(_, item) = (p_s1 * p_t0) / (p_s1 * p_t0 + (1 - p_s1) * (1 - p_t0));
+  // calculating (intersection) probability across picked dimension
+  for(int dim = 0; dim < n_dims; dim++){
+    if(dim == picked_dim){
+      probs = probs * (1 - Q(_, dim));
+    } else{
+      probs = probs * Q(_, dim);
+    }
   }
 
   return probs;
-
 }
 
 // [[Rcpp::export]]
-NumericMatrix pder1_thetas_mupp_(NumericVector thetas_s, NumericVector thetas_t,
-                                 NumericMatrix params_s, NumericMatrix params_t,
-                                 bool type_s = true) {
+NumericVector p_mupp_pick1(NumericMatrix Q,
+                           int picked_dim = 1){
 
   // Arguments:
-  //  - thetas_s/thetas_t: vectors of thetas across all people
-  //  - params_s/params_t: matrices of params for all items
+  //  - Q: a vector of probability of NOT selecting each option
+  //  - picked_dim: the picked dimension
   // Value:
-  //  - dp(s > t)/dtheta(theta_s, thetas_t) for all items
+  //  - P(Z_s = 1 | thetas) OVERALL where s is the selected option
 
-  // declare number of items and persons
-  int n_items   = std::max(params_s.nrow(), params_t.nrow());
-  int n_persons = std::max(thetas_s.size(), thetas_t.size());
-  int n_params  = std::max(params_s.ncol(), params_t.ncol());
+  // declare number of persons/dimensions
+  int n_persons = Q.nrow();
+  int n_dims    = Q.ncol();
 
-  // indicate temporary storage vectors
-  NumericVector params_si(n_params),
-                params_ti(n_params),
-                p_s1(n_persons),
-                p_t0(n_persons),
-                dp_s1(n_persons),
-                dp_t0(n_persons),
-                denom(n_persons);
+  // vectors to store stuff
+  NumericVector numer(n_persons);
+  NumericVector denom(n_persons);
+  NumericVector p(n_persons);
 
-  // indicate return matrix
-  NumericMatrix dprobs(n_persons, n_items);
+  // calculating probability across picked dimension
+  for(int dim = 0; dim < n_dims; dim++){
 
-  // cycle through and add vectors to return matrix
-  for(int item = 0; item < n_items; item++){
+    // determine individual probability multiplication
+    p = p_mupp_pick0(Q, dim);
 
-    // params for this specific item
-    params_si = params_s(item, _);
-    params_ti = params_t(item, _);
-
-    // probability of s/t given ggum model (can use other models?)
-    p_s1  = p_ggum(thetas_s, params_si);       // A
-    p_t0  = 1 - p_ggum(thetas_t, params_ti);   // B
-
-    // derivatives of s/t given ggum model (can use other models?)
-    dp_s1 =  pder1_theta_ggum(thetas_s, params_si);  // A'
-    dp_t0 = -pder1_theta_ggum(thetas_s, params_ti);  // B'
-
-    // denominator of the model
-    denom = p_s1 * p_t0 + (1 - p_s1) * (1 - p_t0);
-
-    // set dprobs to item column of derivative matrix
-    if(type_s){
-      dprobs(_, item) = ((dp_s1 * p_t0) * (denom + p_s1)) / pow(denom, 2);
+    // add to numerator IF picked_dim, otherwise add to denominator
+    if(dim == picked_dim){
+      numer = numer + p;
     } else{
-      dprobs(_, item) = ((dp_t0 * p_s1) * (denom + p_t0)) / pow(denom, 2);
+      denom = denom + p;
     }
   }
 
-  return dprobs;
-
+  return numer / (numer + denom);
 }
-
 
 // [[Rcpp::export]]
-List pder1_thetas_mupp(NumericVector thetas_s, NumericVector thetas_t,
-                       NumericMatrix params_s, NumericMatrix params_t) {
+NumericVector p_mupp_rank1(NumericMatrix Q,
+                           IntegerVector order){
 
   // Arguments:
-  //  - thetas_s/thetas_t: vectors of thetas across all people
-  //  - params_s/params_t: matrices of params for all items
+  //  - Q: a vector of probability of NOT selecting each option
+  //  - order: the order of the output
   // Value:
-  //  - [dp(s > t)/dtheta(theta_s), dp(s > t)/dtheta(thetas_t)] for all items
+  //  - P(Z_s = 1 | thetas) where s is the selected option
 
-  // vector to store der1 matrices (type_s = true and type_s = false)
-  List dprobs;
+  // declare number of persons/dimensions
+  int n_persons = Q.nrow();
+  int n_dims    = order.size();
 
-  // indicate temporary storage elements
-  std::string elt;
+  // matrices to store stuff
+  NumericMatrix Q_order = select_cols(Q, order);
 
-  // cycle through and add matrices to return list
-  for(int type = 1; type >= 0; type--){
+  // indicating return vector
+  NumericVector probs(n_persons, 1.0);
 
-    // element (s OR t) for this particular item
-    if(type){
-      elt = "s";
-    } else{
-      elt = "t";
-    }
-
-    // adding partial derivative to derivative matrix
-    dprobs[elt] = pder1_thetas_mupp_(thetas_s, thetas_t,
-                                     params_s, params_t,
-                                     type);
-
+  // calculating probability of being in particular order (1 by 1)
+  for(int dim = 0; dim < n_dims - 1; dim++){
+    probs = probs * p_mupp_pick1(Q_order(_, Range(dim, n_dims - 1)), 0);
   }
 
-  // returning derivative matrices
-  return dprobs;
-
+  return probs;
 }
 
+// // [[Rcpp::export]]
+// NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
+//                                NumericMatrix params,
+//                                IntegerVector dims) {
+//   // Arguments:
+//   //  - thetas: matrix of persons x dims (for all dims)
+//   //  - params: matrix of dims x params (for single item dims)
+//   //  - dims:   vector of dims of the items (in sorted order)
+//   // Value:
+//   //  - matrix of P(s > t > ...)(theta_s, theta_t, theta_...) for all s, t, ... in dims
+//
+//   // declare number of items and persons
+//   int n_items   = std::max(params_s.nrow(), params_t.nrow());
+//   int n_persons = std::max(thetas_s.size(), thetas_t.size());
+//   int n_params  = std::max(params_s.ncol(), params_t.ncol());
+//
+//   // indicate temporary storage vectors
+//   NumericVector params_si(n_params),
+//                 params_ti(n_params),
+//                 p_s1(n_persons),
+//                 p_t0(n_persons);
+//
+//   // indicate return matrix
+//   NumericMatrix probs(n_persons, n_items);
+//
+//   // cycle through and add vectors to return matrix
+//   for(int item = 0; item < n_items; item++){
+//
+//     // params for this specific item
+//     params_si = params_s(item, _);
+//     params_ti = params_t(item, _);
+//
+//     // probability of s/t given ggum model (can use other models?)
+//     p_s1 = p_ggum_impl(thetas_s, params_si);
+//     p_t0 = 1 - p_ggum_impl(thetas_t, params_ti);
+//
+//     // set probs to item column of probability matrix
+//     probs(_, item) = (p_s1 * p_t0) / (p_s1 * p_t0 + (1 - p_s1) * (1 - p_t0));
+//   }
+//
+//   return probs;
+//
+// }
 
-// R Test Code
-/*** R
-thetas   <- seq(-3, 3, length.out = 100000)
-params_1 <- c(1.1, -2.3, -3.1)
-params_2 <- c(1.4, 1.1, -2.4)
-
-library(microbenchmark)
-
-microbenchmark(v1 = {
-p_s1 <- p_ggum(thetas, params_1)
-p_t1 <- p_ggum(thetas, params_2)
-p_s0 <- 1 - p_s1
-p_t0 <- 1 - p_t1
-
-out1  <- p_s1 * p_t0 / ((p_s1 * p_t0) + (p_s0 * p_t1))
-},
-v2 = {
-out2  <- p_mupp(thetas, thetas, rbind(params_1), rbind(params_2))
-})
-*/

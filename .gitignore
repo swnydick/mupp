@@ -95,3 +95,13 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 .Rproj.user
+
+#######
+# C++ #
+#######
+
+# Output files
+*.o
+*.so
+*.dll
+
