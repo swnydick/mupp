@@ -13,11 +13,13 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// /* HELPER FUNCTIONS
-//  *   - select_cols (select non-proximate columns)
-//  */  - select_rows (select non-prosimate rows)
+/* HELPER FUNCTIONS
+ *   - select_cols (select non-proximate columns)
+ *   - select_rows (select non-proximate rows)
+ *   - find_all_permutations (permutation matrix)
+ */
 NumericMatrix select_cols(NumericMatrix X,
-                          IntegerVector ind){
+                          IntegerVector ind) {
 
  // Arguments:
  //  - X:   a matrix to select columns
@@ -38,7 +40,7 @@ NumericMatrix select_cols(NumericMatrix X,
 }
 
 NumericMatrix select_rows(NumericMatrix X,
-                          IntegerVector ind){
+                          IntegerVector ind) {
 
  // Arguments:
  //  - X:   a matrix to select columns
@@ -48,7 +50,7 @@ NumericMatrix select_rows(NumericMatrix X,
  int out_rows = ind.size();
 
  // declaring output
- NumericMatrix Y(out_rows, X.cols());
+ NumericMatrix Y(out_rows, X.ncol());
 
  // iterating
  for(int i = 0; i < out_rows; i++){
@@ -58,6 +60,41 @@ NumericMatrix select_rows(NumericMatrix X,
   return Y;
 }
 
+// [[Rcpp::export]]
+IntegerMatrix find_all_permutations(int n,
+                                    int init = 0){
+
+  // Arguments:
+  //  - n: an integer greater than or equal to 1
+  // Value:
+  //  - permutation matrix in reasonable order
+
+  // Argument Checks
+  if(n < 1){
+    stop("n must be a scalar greater than 1");
+  }
+
+  // declaring helper vectors
+  IntegerVector n_r(1, n);
+
+  // declaring parameter parts
+  int n_rows   = factorial(n_r)[0];
+  int n_cols   = n;
+  int i        = 0;
+
+  // indicating return matrix and temporary storage vector
+  IntegerVector cur_perm = seq_len(n_cols) - (1 - init);
+  IntegerMatrix all_perms(n_rows, n_cols);
+
+  // add permutation to all_perms vector, then
+  // use iterators to find next permutation
+  do{
+    all_perms(i, _) = cur_perm;
+    i              += 1;
+  } while (std::next_permutation(cur_perm.begin(), cur_perm.end()));
+
+  return all_perms;
+}
 
 /* GGUM STUFF
  *  - exp_ggum
@@ -66,7 +103,7 @@ NumericMatrix select_rows(NumericMatrix X,
  */
 NumericVector exp_ggum(NumericVector thetas,
                        NumericVector params,
-                       int exp_mult = 1){
+                       int exp_mult = 1) {
 
   // Arguments:
   //  - thetas: a vector of thetas across all people
@@ -93,29 +130,28 @@ NumericVector exp_ggum(NumericVector thetas,
   return exp_1;
 }
 
-// [[Rcpp::export]]
-NumericVector p_ggum(NumericVector thetas,
-                     NumericVector params){
+NumericVector q_ggum(NumericVector thetas,
+                     NumericVector params) {
 
   // Arguments:
   //  - thetas: a vector of thetas across all people
   //  - params: a vector of params for one item [alpha, delta, tau]
   // Value:
-  //  - P(Z_s = 1 | thetas)
+  //  - P(Z_s = 0 | thetas) for a single parameter set
 
   // calculate exponent expressions
   NumericVector exp_12 = exp_ggum(thetas, params, 1) +
                          exp_ggum(thetas, params, 2);
-  NumericVector exp_3  = exp_ggum(thetas, params, 3);
+  NumericVector exp_03 = 1 +
+                         exp_ggum(thetas, params, 3);
 
   // calculate probabilities
-  NumericVector probs  = exp_12 / (1 + exp_12 + exp_3);
+  NumericVector probs  = exp_03 / (exp_12 + exp_03);
 
   return probs;
 }
 
-// [[Rcpp::export]]
-NumericVector q_ggum_all(NumericMatrix thetas,
+NumericMatrix q_ggum_all(NumericMatrix thetas,
                          NumericMatrix params) {
 
   // Arguments:
@@ -133,14 +169,14 @@ NumericVector q_ggum_all(NumericMatrix thetas,
 
   // calculating probabilities across all dimensions
   for(int dim = 0; dim < n_dims; dim++){
-    probs(_, dim) = 1 - p_ggum(thetas(_, dim), params(dim, _));
+    probs(_, dim) = q_ggum(thetas(_, dim), params(dim, _));
   }
 
   return probs;
 }
 
 NumericVector pder1_theta_ggum(NumericVector thetas,
-                               NumericVector params){
+                               NumericVector params) {
 
   // Arguments:
   //  - thetas: a vector of thetas across all people
@@ -165,16 +201,15 @@ NumericVector pder1_theta_ggum(NumericVector thetas,
 }
 
 /* MUPP STUFF
- *   - p_mupp_pick0 - numerator (individual component) of PICK probability
- *   - p_mupp_pick1 - OVERALL PICK probability
- *   - p_mupp_rank1 - OVERALL RANK probability
+ *   - p_mupp_pick0     - numerator (individual component) of PICK probability
+ *   - p_mupp_pick1     - OVERALL PICK probability
+ *   - p_mupp_rank1     - OVERALL RANK probability
  *   - p_mupp_rank_impl - OVERALL RANK probability for an individual order OR
  *                        all possible order combinations
  */
 
-// [[Rcpp::export]]
 NumericVector p_mupp_pick0(NumericMatrix Q,
-                           int picked_dim = 1){
+                           int picked_dim = 1) {
 
   // Arguments:
   //  - Q: a vector of probability of NOT selecting each option
@@ -201,9 +236,8 @@ NumericVector p_mupp_pick0(NumericMatrix Q,
   return probs;
 }
 
-// [[Rcpp::export]]
 NumericVector p_mupp_pick1(NumericMatrix Q,
-                           int picked_dim = 1){
+                           int picked_dim = 1) {
 
   // Arguments:
   //  - Q: a vector of probability of NOT selecting each option
@@ -237,7 +271,6 @@ NumericVector p_mupp_pick1(NumericMatrix Q,
   return numer / (numer + denom);
 }
 
-// [[Rcpp::export]]
 NumericVector p_mupp_rank1(NumericMatrix Q,
                            IntegerVector order){
 
@@ -265,47 +298,61 @@ NumericVector p_mupp_rank1(NumericMatrix Q,
   return probs;
 }
 
-// // [[Rcpp::export]]
-// NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
-//                                NumericMatrix params,
-//                                IntegerVector dims) {
-//   // Arguments:
-//   //  - thetas: matrix of persons x dims (for all dims)
-//   //  - params: matrix of dims x params (for single item dims)
-//   //  - dims:   vector of dims of the items (in sorted order)
-//   // Value:
-//   //  - matrix of P(s > t > ...)(theta_s, theta_t, theta_...) for all s, t, ... in dims
-//
-//   // declare number of items and persons
-//   int n_items   = std::max(params_s.nrow(), params_t.nrow());
-//   int n_persons = std::max(thetas_s.size(), thetas_t.size());
-//   int n_params  = std::max(params_s.ncol(), params_t.ncol());
-//
-//   // indicate temporary storage vectors
-//   NumericVector params_si(n_params),
-//                 params_ti(n_params),
-//                 p_s1(n_persons),
-//                 p_t0(n_persons);
-//
-//   // indicate return matrix
-//   NumericMatrix probs(n_persons, n_items);
-//
-//   // cycle through and add vectors to return matrix
-//   for(int item = 0; item < n_items; item++){
-//
-//     // params for this specific item
-//     params_si = params_s(item, _);
-//     params_ti = params_t(item, _);
-//
-//     // probability of s/t given ggum model (can use other models?)
-//     p_s1 = p_ggum_impl(thetas_s, params_si);
-//     p_t0 = 1 - p_ggum_impl(thetas_t, params_ti);
-//
-//     // set probs to item column of probability matrix
-//     probs(_, item) = (p_s1 * p_t0) / (p_s1 * p_t0 + (1 - p_s1) * (1 - p_t0));
-//   }
-//
-//   return probs;
-//
-// }
+// [[Rcpp::export]]
+NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
+                               NumericMatrix params,
+                               IntegerVector dims = NA_INTEGER) {
+
+  // Arguments:
+  //  - thetas: matrix of persons x dims (for all dims)
+  //  - params: matrix of dims x params (for single item dims)
+  //  - dims:   vector of dims of the items
+  // Value:
+  //  - matrix of P(s > t > ...)(theta_s, theta_t, theta_ ...) for all s, t, ... in dims
+  //    (all of the possible permutations)
+
+  // declare number of items/params (1)
+  int n_persons   = thetas.nrow();
+  int n_dims_all  = thetas.ncol();
+  int n_params    = params.nrow();
+
+  // fixing dims if it is NA or missing
+  if(any(is_na(dims))){
+    dims = seq_len(n_params);
+  }
+
+  // R -> C Conversion (subtract 1)
+  dims = dims - 1;
+
+  // declare number of items/params (2)
+  int n_dims_item = dims.size();
+
+  // Argument Checks:
+
+  // - dims must have the same number of elements as params
+  if(n_dims_item != n_params){
+    stop("dims must have the same number of elements as params");
+  }
+
+  // - dims must have MAX value less than thetas
+  if(max(dims) >= n_dims_all){
+    stop("dims must have max value less than the number of columns of theta");
+  }
+
+  // indicate temporary storage vectors
+  IntegerMatrix picked_orders = find_all_permutations(n_dims_item);
+  NumericMatrix Q             = q_ggum_all(select_cols(thetas, dims), params);
+
+  // indicate return matrix
+  int n_orders = picked_orders.nrow();
+  NumericMatrix probs(n_persons, n_orders);
+
+  // add all probabilities to return matrix
+  for(int perm = 0; perm < n_orders; perm++){
+    probs(_, perm) = p_mupp_rank1(Q, picked_orders(perm, _));
+  }
+
+  return probs;
+}
+
 

@@ -252,14 +252,14 @@ params_2 <- c(1.4, 1.1, -2.4)
 library(microbenchmark)
 
 microbenchmark(v1 = {
-p_s1 <- p_ggum(thetas, params_1)
-p_t1 <- p_ggum(thetas, params_2)
+p_s1 <- p_ggum_impl(thetas, params_1)
+p_t1 <- p_ggum_impl(thetas, params_2)
 p_s0 <- 1 - p_s1
 p_t0 <- 1 - p_t1
 
 out1  <- p_s1 * p_t0 / ((p_s1 * p_t0) + (p_s0 * p_t1))
 },
 v2 = {
-out2  <- p_mupp(thetas, thetas, rbind(params_1), rbind(params_2))
+out2  <- p_mupp_impl(thetas, thetas, rbind(params_1), rbind(params_2))
 })
 */
