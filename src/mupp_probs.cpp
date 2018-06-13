@@ -356,3 +356,49 @@ NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
 }
 
 
+/*** R
+
+rm(list = ls())
+
+# specifying parameters
+params_1 <- c(2, -2, -1)
+params_2 <- c(2, 0, 0)
+params_3 <- c(2, 1, -1)
+params_4 <- c(2, 2, 0)
+
+# generating parameters/thetas based on specification
+params   <- do.call(what = rbind,
+                    args = lapply(ls(pattern = "params\\_",
+                                     envir   = .GlobalEnv),
+                                  FUN = get))
+thetas   <- seq(-3, 3, length.out = 1000)
+thetas   <- do.call(what = cbind,
+                    args = lapply(1:nrow(params),
+                                  FUN = function(x) thetas))
+
+# calculating
+out      <- mupp:::p_mupp_rank_impl(thetas, params)
+
+# restructuring
+comb     <- apply(mupp:::find_all_permutations(nrow(params), 1),
+                  MARGIN   = 1,
+                  FUN      = paste,
+                  collapse = "-")
+out      <- setNames(object = as.data.frame(out),
+                     nm     = comb)
+out      <- cbind(theta = thetas[ , 1], out)
+out      <- reshape2::melt(out,
+                           id.vars       = "theta",
+                           variable.name = "combination",
+                           value.name    = "probability")
+
+# plotting
+library(ggplot2)
+g <- ggplot(out, aes(x        = theta,
+                     y        = probability,
+                     color    = combination)) +
+     geom_line(size = 1) +
+     theme_minimal() +
+     guides(color = FALSE)
+print(g)
+*/

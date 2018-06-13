@@ -5,80 +5,35 @@
 
 using namespace Rcpp;
 
-// p_ggum_impl
-NumericVector p_ggum_impl(NumericVector thetas, NumericVector params);
-RcppExport SEXP _mupp_p_ggum_impl(SEXP thetasSEXP, SEXP paramsSEXP) {
+// find_all_permutations
+IntegerMatrix find_all_permutations(int n, int init);
+RcppExport SEXP _mupp_find_all_permutations(SEXP nSEXP, SEXP initSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type thetas(thetasSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(p_ggum_impl(thetas, params));
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type init(initSEXP);
+    rcpp_result_gen = Rcpp::wrap(find_all_permutations(n, init));
     return rcpp_result_gen;
 END_RCPP
 }
-// pder1_theta_ggum_impl
-NumericVector pder1_theta_ggum_impl(NumericVector thetas, NumericVector params);
-RcppExport SEXP _mupp_pder1_theta_ggum_impl(SEXP thetasSEXP, SEXP paramsSEXP) {
+// p_mupp_rank_impl
+NumericMatrix p_mupp_rank_impl(NumericMatrix thetas, NumericMatrix params, IntegerVector dims);
+RcppExport SEXP _mupp_p_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP dimsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type thetas(thetasSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(pder1_theta_ggum_impl(thetas, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// p_mupp_impl
-NumericMatrix p_mupp_impl(NumericVector thetas_s, NumericVector thetas_t, NumericMatrix params_s, NumericMatrix params_t);
-RcppExport SEXP _mupp_p_mupp_impl(SEXP thetas_sSEXP, SEXP thetas_tSEXP, SEXP params_sSEXP, SEXP params_tSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type thetas_s(thetas_sSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type thetas_t(thetas_tSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type params_s(params_sSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type params_t(params_tSEXP);
-    rcpp_result_gen = Rcpp::wrap(p_mupp_impl(thetas_s, thetas_t, params_s, params_t));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pder1_theta_mupp1_impl
-NumericMatrix pder1_theta_mupp1_impl(NumericVector thetas_s, NumericVector thetas_t, NumericMatrix params_s, NumericMatrix params_t, bool type_s);
-RcppExport SEXP _mupp_pder1_theta_mupp1_impl(SEXP thetas_sSEXP, SEXP thetas_tSEXP, SEXP params_sSEXP, SEXP params_tSEXP, SEXP type_sSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type thetas_s(thetas_sSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type thetas_t(thetas_tSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type params_s(params_sSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type params_t(params_tSEXP);
-    Rcpp::traits::input_parameter< bool >::type type_s(type_sSEXP);
-    rcpp_result_gen = Rcpp::wrap(pder1_theta_mupp1_impl(thetas_s, thetas_t, params_s, params_t, type_s));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pder1_theta_mupp_impl
-List pder1_theta_mupp_impl(NumericVector thetas_s, NumericVector thetas_t, NumericMatrix params_s, NumericMatrix params_t);
-RcppExport SEXP _mupp_pder1_theta_mupp_impl(SEXP thetas_sSEXP, SEXP thetas_tSEXP, SEXP params_sSEXP, SEXP params_tSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type thetas_s(thetas_sSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type thetas_t(thetas_tSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type params_s(params_sSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type params_t(params_tSEXP);
-    rcpp_result_gen = Rcpp::wrap(pder1_theta_mupp_impl(thetas_s, thetas_t, params_s, params_t));
+    Rcpp::traits::input_parameter< NumericMatrix >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
+    rcpp_result_gen = Rcpp::wrap(p_mupp_rank_impl(thetas, params, dims));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_mupp_p_ggum_impl", (DL_FUNC) &_mupp_p_ggum_impl, 2},
-    {"_mupp_pder1_theta_ggum_impl", (DL_FUNC) &_mupp_pder1_theta_ggum_impl, 2},
-    {"_mupp_p_mupp_impl", (DL_FUNC) &_mupp_p_mupp_impl, 4},
-    {"_mupp_pder1_theta_mupp1_impl", (DL_FUNC) &_mupp_pder1_theta_mupp1_impl, 5},
-    {"_mupp_pder1_theta_mupp_impl", (DL_FUNC) &_mupp_pder1_theta_mupp_impl, 4},
+    {"_mupp_find_all_permutations", (DL_FUNC) &_mupp_find_all_permutations, 2},
+    {"_mupp_p_mupp_rank_impl", (DL_FUNC) &_mupp_p_mupp_rank_impl, 3},
     {NULL, NULL, 0}
 };
 
