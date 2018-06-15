@@ -17,23 +17,37 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pder1_theta_ggum_all
+NumericMatrix pder1_theta_ggum_all(NumericMatrix thetas, NumericMatrix params);
+RcppExport SEXP _mupp_pder1_theta_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(pder1_theta_ggum_all(thetas, params));
+    return rcpp_result_gen;
+END_RCPP
+}
 // p_mupp_rank_impl
-NumericMatrix p_mupp_rank_impl(NumericMatrix thetas, NumericMatrix params, IntegerVector dims);
-RcppExport SEXP _mupp_p_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP dimsSEXP) {
+NumericMatrix p_mupp_rank_impl(NumericMatrix thetas, NumericMatrix params, IntegerVector dims, IntegerVector picked_order_id);
+RcppExport SEXP _mupp_p_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP dimsSEXP, SEXP picked_order_idSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type thetas(thetasSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type params(paramsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(p_mupp_rank_impl(thetas, params, dims));
+    Rcpp::traits::input_parameter< IntegerVector >::type picked_order_id(picked_order_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(p_mupp_rank_impl(thetas, params, dims, picked_order_id));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mupp_find_all_permutations", (DL_FUNC) &_mupp_find_all_permutations, 2},
-    {"_mupp_p_mupp_rank_impl", (DL_FUNC) &_mupp_p_mupp_rank_impl, 3},
+    {"_mupp_pder1_theta_ggum_all", (DL_FUNC) &_mupp_pder1_theta_ggum_all, 2},
+    {"_mupp_p_mupp_rank_impl", (DL_FUNC) &_mupp_p_mupp_rank_impl, 4},
     {NULL, NULL, 0}
 };
 

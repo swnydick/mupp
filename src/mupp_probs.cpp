@@ -11,6 +11,7 @@
  */
 
 #include <Rcpp.h>
+#include "mupp_utilities.h"
 using namespace Rcpp;
 
 /* HELPER FUNCTIONS
@@ -58,42 +59,6 @@ NumericMatrix select_rows(NumericMatrix X,
  }
 
   return Y;
-}
-
-// [[Rcpp::export]]
-IntegerMatrix find_all_permutations(int n,
-                                    int init = 0){
-
-  // Arguments:
-  //  - n: an integer greater than or equal to 1
-  // Value:
-  //  - permutation matrix in reasonable order
-
-  // Argument Checks
-  if(n < 1){
-    stop("n must be a scalar greater than 1");
-  }
-
-  // declaring helper vectors
-  IntegerVector n_r(1, n);
-
-  // declaring parameter parts
-  int n_rows   = factorial(n_r)[0];
-  int n_cols   = n;
-  int i        = 0;
-
-  // indicating return matrix and temporary storage vector
-  IntegerVector cur_perm = seq_len(n_cols) - (1 - init);
-  IntegerMatrix all_perms(n_rows, n_cols);
-
-  // add permutation to all_perms vector, then
-  // use iterators to find next permutation
-  do{
-    all_perms(i, _) = cur_perm;
-    i              += 1;
-  } while (std::next_permutation(cur_perm.begin(), cur_perm.end()));
-
-  return all_perms;
 }
 
 /* GGUM STUFF
@@ -156,7 +121,7 @@ NumericMatrix q_ggum_all(NumericMatrix thetas,
 
   // Arguments:
   //  - thetas: a matrix of thetas across all people/dims
-  //  - params: a vector of params for one item [alpha, delta, tau]
+  //  - params: a matrix of params for one item [alpha, delta, tau]
   // Value:
   //  - P(Z = 0 | thetas) across all dimensions
 
@@ -196,6 +161,31 @@ NumericVector pder1_theta_ggum(NumericVector thetas,
   NumericVector dprobs = alpha * (exp_1 * (1 - 2 * exp_3) +
                                   exp_2 * (2 - 1 * exp_3)) /
                          pow((1 + exp_1 + exp_2 + exp_3), 2);
+
+  return dprobs;
+}
+
+// [[Rcpp::export]]
+NumericMatrix pder1_theta_ggum_all(NumericMatrix thetas,
+                                   NumericMatrix params) {
+
+  // Arguments:
+  //  - thetas: a matrix of thetas across all people/dims
+  //  - params: a matrix of params for one item [alpha, delta, tau]
+  // Value:
+  //  - P'(Z = 1 | thetas) across all dimensions
+
+  // declare number of persons/dimensions
+  int n_persons = thetas.nrow();
+  int n_dims    = params.nrow();
+
+  // indicating return vector
+  NumericMatrix dprobs(n_persons, n_dims);
+
+  // calculating probabilities across all dimensions
+  for(int dim = 0; dim < n_dims; dim++){
+    dprobs(_, dim) = pder1_theta_ggum(thetas(_, dim), params(dim, _));
+  }
 
   return dprobs;
 }
@@ -301,33 +291,50 @@ NumericVector p_mupp_rank1(NumericMatrix Q,
 // [[Rcpp::export]]
 NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
                                NumericMatrix params,
-                               IntegerVector dims = NA_INTEGER) {
+                               IntegerVector dims            = NA_INTEGER,
+                               IntegerVector picked_order_id = NA_INTEGER) {
 
   // Arguments:
   //  - thetas: matrix of persons x dims (for all dims)
   //  - params: matrix of dims x params (for single item dims)
   //  - dims:   vector of dims of the items
+  //  - picked_order_id: index of picked order for each person
+  //                     (if NA, return ALL orders)
   // Value:
   //  - matrix of P(s > t > ...)(theta_s, theta_t, theta_ ...) for all s, t, ... in dims
-  //    (all of the possible permutations)
+  //    (all of the possible permutations) OR
+  //  - matrix of P(s > t > ...)(theta_s, theta_t, theta_ ...) for the PICKED ORDER
+  //    (ONE permutation for each person)
 
-  // declare number of items/params (1)
+  // declare number of items/params (1) AND whether to return ALL combinations
   int n_persons   = thetas.nrow();
   int n_dims_all  = thetas.ncol();
   int n_params    = params.nrow();
+  bool all_combs  = true;
+
+  // temporary vectors to store things
+  int n_orders;
 
   // fixing dims if it is NA or missing
   if(any(is_na(dims))){
     dims = seq_len(n_params);
   }
 
+  if(any(is_na(picked_order_id))){
+    picked_order_id = NA_INTEGER;
+  } else{
+    picked_order_id = rep_len(picked_order_id, n_persons);
+    all_combs       = false;
+  }
+
   // R -> C Conversion (subtract 1)
-  dims = dims - 1;
+  IntegerVector dims_c            = dims - 1;
+  IntegerVector picked_order_id_c = picked_order_id - 1;
 
   // declare number of items/params (2)
-  int n_dims_item = dims.size();
+  int n_dims_item = dims_c.size();
 
-  // Argument Checks:
+  // Argument Checks (1):
 
   // - dims must have the same number of elements as params
   if(n_dims_item != n_params){
@@ -335,16 +342,46 @@ NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
   }
 
   // - dims must have MAX value less than thetas
-  if(max(dims) >= n_dims_all){
+  if(max(dims_c) >= n_dims_all){
     stop("dims must have max value less than the number of columns of theta");
   }
 
   // indicate temporary storage vectors
   IntegerMatrix picked_orders = find_all_permutations(n_dims_item);
-  NumericMatrix Q             = q_ggum_all(select_cols(thetas, dims), params);
+  NumericMatrix Q             = q_ggum_all(select_cols(thetas, dims_c), params);
+
+  // Argument Checks (2):
+
+  // - picked_order_id must have MAX value at most factorial(n_dims) and MIN value at least 0
+  if(!all_combs){
+    if(max(picked_order_id_c) >= picked_orders.nrow()){
+      stop("picked_order_id must be at most the factorial(number of dimensions)");
+    } else if(min(picked_order_id_c) < 0){
+      stop("picked_order_id must be at least 1");
+    }
+  }
+
+  // determine the number of orders AND the Q matrix
+  //  - if we haven't specified selected order, we do this for EVERY ORDER
+  //  - otherwise, we do this JUST for the selected order
+  if(all_combs){
+    n_orders = picked_orders.nrow();
+  } else{
+    n_orders = 1;
+
+    // temporary vectors to store the Q_person and picked_order
+    NumericVector Q_person(n_params);
+    IntegerVector picked_order(n_params);
+
+    // for each person, rearrange Q so that [1, 2, 3, ...] is PICKED order ...
+    for(int person = 0; person < n_persons; person++){
+      picked_order = picked_orders(picked_order_id[person], _);
+      Q_person     = Q(person, _);
+      Q(person, _) = as<NumericVector>(Q_person[picked_order]);
+    }
+  }
 
   // indicate return matrix
-  int n_orders = picked_orders.nrow();
   NumericMatrix probs(n_persons, n_orders);
 
   // add all probabilities to return matrix
@@ -357,14 +394,16 @@ NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
 
 
 /*** R
-
 rm(list = ls())
 
 # specifying parameters
 params_1 <- c(2, -2, -1)
 params_2 <- c(2, 0, 0)
 params_3 <- c(2, 1, -1)
-params_4 <- c(2, 2, 0)
+params_4 <- c(2, .1, .1)
+params_5 <- c(2, -3, 3)
+params_6 <- c(1, .8, 0)
+params_7 <- c(1, -2, -.2)
 
 # generating parameters/thetas based on specification
 params   <- do.call(what = rbind,
@@ -401,4 +440,13 @@ g <- ggplot(out, aes(x        = theta,
      theme_minimal() +
      guides(color = FALSE)
 print(g)
+
+# derivatives??
+library(numDeriv)
+
+p_mupp_rank <- function(thetas, params, rank_index = 1){
+
+  mupp:::p_mupp_rank_impl(rbind(thetas), rbind(params))[ , rank_index]
+
+}
 */
