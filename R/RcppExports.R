@@ -32,3 +32,7 @@ p_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id
     .Call(`_mupp_p_mupp_rank_impl`, thetas, params, dims, picked_order_id)
 }
 
+loglik_mupp_rank_impl <- function(thetas, params, items, picked_orders) {
+    .Call(`_mupp_loglik_mupp_rank_impl`, thetas, params, items, picked_orders)
+}
+

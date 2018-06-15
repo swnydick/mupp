@@ -211,7 +211,7 @@ simulate_mupp_resp <- function(persons,
                     name = names(items),
                     f = function(item, resp, name){
                       data.frame(persons[1],
-                                 item   = name,
+                                 item   = type.convert(name),
                                  n_dims = nrow(item),
                                  resp   = resp,
                                  stringsAsFactors = FALSE)

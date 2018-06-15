@@ -2,12 +2,24 @@
 % Please edit documentation in R/prior_ggum.R
 \name{prior_ggum}
 \alias{prior_ggum}
+\alias{d_thetas_prior}
+\alias{d_alpha_prior}
+\alias{d_delta_prior}
+\alias{d_tau_prior}
 \alias{r_thetas_prior}
 \alias{r_alpha_prior}
 \alias{r_delta_prior}
 \alias{r_tau_prior}
 \title{Prior GGUM Distributions}
 \usage{
+d_thetas_prior(x, ...)
+
+d_alpha_prior(x, ...)
+
+d_delta_prior(x, ...)
+
+d_tau_prior(x, ...)
+
 r_thetas_prior(n, ...)
 
 r_alpha_prior(n, ...)
@@ -17,6 +29,8 @@ r_delta_prior(n, ...)
 r_tau_prior(n, ...)
 }
 \arguments{
+\item{x}{vector of quantiles}
+
 \item{n}{number of observations required for the simulation}
 }
 \description{

@@ -375,7 +375,7 @@ NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
 
     // for each person, rearrange Q so that [1, 2, 3, ...] is PICKED order ...
     for(int person = 0; person < n_persons; person++){
-      picked_order = picked_orders(picked_order_id[person], _);
+      picked_order = picked_orders(picked_order_id_c[person], _);
       Q_person     = Q(person, _);
       Q(person, _) = as<NumericVector>(Q_person[picked_order]);
     }
@@ -392,61 +392,94 @@ NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
   return probs;
 }
 
+//[[Rcpp::export]]
+NumericMatrix loglik_mupp_rank_impl(NumericMatrix thetas,
+                                    NumericMatrix params,
+                                    IntegerMatrix items,
+                                    IntegerMatrix picked_orders){
 
-/*** R
-rm(list = ls())
+  // Arguments:
+  //  - thetas: matrix of persons x dims (for all dims)
+  //  - params: matrix of dims x params (for all params, in order)
+  //  - items: matrix of [item, statement, dim] for all items, where
+  //           statement is integer indicating the statement number and aligns
+  //           with params
+  //  - picked_order_id: matrix if picked_order_id for [people x items]
 
-# specifying parameters
-params_1 <- c(2, -2, -1)
-params_2 <- c(2, 0, 0)
-params_3 <- c(2, 1, -1)
-params_4 <- c(2, .1, .1)
-params_5 <- c(2, -3, 3)
-params_6 <- c(1, .8, 0)
-params_7 <- c(1, -2, -.2)
+  // Value:
+  //  - matrix of loglikelihoods for mupp rank stuff ... (potentially aggregated)
 
-# generating parameters/thetas based on specification
-params   <- do.call(what = rbind,
-                    args = lapply(ls(pattern = "params\\_",
-                                     envir   = .GlobalEnv),
-                                  FUN = get))
-thetas   <- seq(-3, 3, length.out = 1000)
-thetas   <- do.call(what = cbind,
-                    args = lapply(1:nrow(params),
-                                  FUN = function(x) thetas))
+  // declare number of persons and dimensions of everything else
+  int n_persons    = thetas.nrow();
+  int n_dims_all   = thetas.ncol();
+  int n_statements = params.nrow();
+  int n_params     = params.ncol();
+  int n_rows_items = items.nrow();
+  int n_cols_items = items.ncol();
 
-# calculating
-out      <- mupp:::p_mupp_rank_impl(thetas, params)
+  int n_rows_resp  = picked_orders.nrow();
+  int n_cols_resp  = picked_orders.ncol();
 
-# restructuring
-comb     <- apply(mupp:::find_all_permutations(nrow(params), 1),
-                  MARGIN   = 1,
-                  FUN      = paste,
-                  collapse = "-")
-out      <- setNames(object = as.data.frame(out),
-                     nm     = comb)
-out      <- cbind(theta = thetas[ , 1], out)
-out      <- reshape2::melt(out,
-                           id.vars       = "theta",
-                           variable.name = "combination",
-                           value.name    = "probability")
+  // Argument Checks (1)
 
-# plotting
-library(ggplot2)
-g <- ggplot(out, aes(x        = theta,
-                     y        = probability,
-                     color    = combination)) +
-     geom_line(size = 1) +
-     theme_minimal() +
-     guides(color = FALSE)
-print(g)
+  // - items must have three columns
+  if(n_cols_items != 3){
+    stop("items must have three columns [item, statement, dimension]");
+  }
 
-# derivatives??
-library(numDeriv)
+  // - params must have three columns
+  if(n_params != 3){
+    stop("params must have three columns [alpha, delta, tau]");
+  }
 
-p_mupp_rank <- function(thetas, params, rank_index = 1){
+  // - number of response rows must match number of persons
+  if(n_persons != n_rows_resp){
+    stop("number of persons must match number of rows of the resp matrix");
+  }
 
-  mupp:::p_mupp_rank_impl(rbind(thetas), rbind(params))[ , rank_index]
+  // declare items
+  IntegerVector item_ids      = items(_, 0);
+  IntegerVector statement_ids = items(_, 1) - 1;
+  IntegerVector dim_ids       = items(_, 2);
+  IntegerVector unique_items  = sort_unique(item_ids);
+  int n_items = unique_items.size();
 
+  // Argument Checks (2)
+
+  // - number of response cols must match number of items
+  if(n_items != n_cols_resp){
+    stop("number of unique item ids must match number of cols of the resp matrix");
+  }
+
+  // - dims must be between 1 and number of implied dims
+  if((min(dim_ids) <= 0) | (max(dim_ids) > n_dims_all)){
+    stop("number of dimensions in item matrix must be between 1 and the number of columns of theta");
+  }
+
+  // - statements must be between 1 and number of implied statements
+  if((min(statement_ids) < 0) | (max(statement_ids) >= n_statements)){
+    stop("number of statements in item matrix must be between 1 and the number or rows of params");
+  }
+
+  // indicate return matrix and temporary vectors
+  NumericMatrix loglik(n_persons, n_items);
+  NumericVector p(n_persons);
+  LogicalVector item_flag(n_rows_items);
+
+  for(int item = 0; item < n_items; item++){
+
+    // pulling out statements and dimensions for this particular item
+    item_flag = (item_ids == unique_items[item]);
+
+    // calculating probability (all thetas, relevant params/dims, item orders)
+    p         = p_mupp_rank_impl(thetas,
+                                 select_rows(params, statement_ids[item_flag]),
+                                 dim_ids[item_flag],
+                                 picked_orders(_, item))(_, 0);
+
+  // calculating likelihood and putting it in matrix
+    loglik(_, item) = log(p);
+  }
+
+  return loglik;
 }
-*/

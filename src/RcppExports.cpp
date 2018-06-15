@@ -43,11 +43,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// loglik_mupp_rank_impl
+NumericMatrix loglik_mupp_rank_impl(NumericMatrix thetas, NumericMatrix params, IntegerMatrix items, IntegerMatrix picked_orders);
+RcppExport SEXP _mupp_loglik_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP itemsSEXP, SEXP picked_ordersSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type items(itemsSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type picked_orders(picked_ordersSEXP);
+    rcpp_result_gen = Rcpp::wrap(loglik_mupp_rank_impl(thetas, params, items, picked_orders));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mupp_find_all_permutations", (DL_FUNC) &_mupp_find_all_permutations, 2},
     {"_mupp_pder1_theta_ggum_all", (DL_FUNC) &_mupp_pder1_theta_ggum_all, 2},
     {"_mupp_p_mupp_rank_impl", (DL_FUNC) &_mupp_p_mupp_rank_impl, 4},
+    {"_mupp_loglik_mupp_rank_impl", (DL_FUNC) &_mupp_loglik_mupp_rank_impl, 4},
     {NULL, NULL, 0}
 };
 

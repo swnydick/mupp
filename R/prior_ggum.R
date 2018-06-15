@@ -2,6 +2,7 @@
 #'
 #' Simulate prior distribution parameters for the GGUM model
 #'
+#' @param x vector of quantiles
 #' @param n number of observations required for the simulation
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
@@ -11,6 +12,52 @@
 #' @name prior_ggum
 #'
 NULL
+
+#' @rdname prior_ggum
+#' @export
+d_thetas_prior <- function(x, ...){
+  dnorm(n, ...)
+} # END d_thetas_prior FUNCTION
+
+#' @rdname prior_ggum
+#' @export
+d_alpha_prior <- function(x, ...){
+  params <- list(x      = x,
+                 shape1 = 1.5,
+                 shape2 = 1.5,
+                 min    = 0.25,
+                 max    = 4.00)
+  params <- modifyList(params, list(...))
+
+  do.call(dnsbeta, params)
+} # END d_alpha_prior FUNCTION
+
+#' @rdname prior_ggum
+#' @export
+d_delta_prior <- function(x, ...){
+  params <- list(x      = x,
+                 shape1 = 2.0,
+                 shape2 = 2.0,
+                 min    = -4.0,
+                 max    = +4.0)
+  params <- modifyList(params, list(...))
+
+  do.call(dnsbeta, params)
+} # END d_delta_prior FUNCTION
+
+#' @rdname prior_ggum
+#' @export
+d_tau_prior <- function(x, ...){
+  params <- list(x      = x,
+                 shape1 = 2.0,
+                 shape2 = 2.0,
+                 min    = -4.0,
+                 max    = +4.0)
+  params <- modifyList(params, list(...))
+
+  do.call(dnsbeta, params)
+} # END d_tau_prior FUNCTION
+
 
 #' @rdname prior_ggum
 #' @export
