@@ -7,7 +7,7 @@
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
 #'
-#' @importFrom extraDistr rnsbeta
+#' @importFrom extraDistr rnsbeta dnsbeta
 #'
 #' @name prior_ggum
 #'
@@ -16,7 +16,7 @@ NULL
 #' @rdname prior_ggum
 #' @export
 d_thetas_prior <- function(x, ...){
-  dnorm(n, ...)
+  dnorm(x, ...)
 } # END d_thetas_prior FUNCTION
 
 #' @rdname prior_ggum
