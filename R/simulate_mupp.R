@@ -22,30 +22,11 @@ simulate_mupp_params <- function(n_persons = 1,
                                  n_items   = 1,
                                  n_dims    = 2){
 
-  # helper functions #
-
-  # a # function to ensure argument is within numeric range
-  check_numeric <- function(arg,
-                            min_number = 1){
-
-    # pull out argument name AND round argument
-    arg_char <- deparse(substitute(arg))
-    arg      <- round(arg)
-
-    # ensure that argument is within bounds
-    if(!is.numeric(arg) || length(arg) != 1 || arg < min_number || arg == Inf){
-      stop(arg_char, " must be a single number greater than ", min_number,
-           call. = FALSE)
-    } # END if STATEMENT
-
-    return(arg)
-  } # END check_numeric FUNCTION
-
   # argument checks #
-  n_persons <- check_numeric(n_persons)
-  n_items   <- check_numeric(n_items)
-  n_dims    <- check_numeric(n_dims,
-                             min_number = 2)
+  n_persons  <- check_numeric(n_persons)
+  n_items    <- check_numeric(n_items)
+  n_dims     <- check_numeric(n_dims,
+                              min_number = 2)
 
   ## persons ##
 
@@ -133,22 +114,7 @@ simulate_mupp_params <- function(n_persons = 1,
 simulate_mupp_resp <- function(persons,
                                items){
 
-  # helper functions #
-
-  # a # function to ensure argument has appropriate names
-  check_names <- function(df, names){
-
-    # pull out argument name AND round argument
-    arg_char  <- deparse(substitute(df))
-    bad_names <- setdiff(names, names(df))
-
-    if(length(bad_names)){
-      stop("column ", bad_names, " is not in ", arg_char, ".",
-           call. = FALSE)
-    } # END if STATEMENT
-
-    return(df[names])
-  } # END check_names FUNCTION
+  # argument checks #
 
   # converting to lowercase
   persons %<>% setNames(tolower(names(.)))
@@ -186,50 +152,58 @@ simulate_mupp_resp <- function(persons,
                     value.var = v_var) %>%
               as.data.frame()
 
-  # split items so that different items are different list elements
-  items  %<>% split(.[[item_name]])
-
-  # simulating responses #
-
   # determining probabilities
-  probs      <- lapply(items,
-                       FUN            = determine_mupp_probs1,
-                       persons        = persons,
-                       dimension_name = dim_name,
-                       param_names    = param_names)
+  probs    <- determine_mupp_probs_(items          = items,
+                                    persons        = persons,
+                                    item_name      = item_name,
+                                    dimension_name = dim_name,
+                                    param_names    = param_names)
 
   # simulating responses
-  resp       <- lapply(probs,
-                       FUN     = simulate_mupp_resp1)
+  resp      <- simulate_mupp_resp_(probs)
 
   # converting to item order
-  all_orders <- lapply(X    = seq_len(max(sapply(items, nrow))),
-                       FUN  = find_all_permutations,
-                       init = 1)
-  resp       <- Map(item = items,
-                    resp = resp,
-                    name = names(items),
+  resp      <- Map(resp = resp,
+                   name = names(resp),
                     f = function(item, resp, name){
                       data.frame(persons[1],
-                                 item   = type.convert(name),
-                                 n_dims = nrow(item),
-                                 resp   = resp,
+                                 item = type.convert(name),
+                                 resp = resp,
                                  stringsAsFactors = FALSE)
                     }) %>%
                do.call(what = rbind) %>%
+               arrange_by_vars(vars = names(.)[1:2]) %>%
                set_rownames(NULL)
 
   # fixing items
-  items      <- do.call(what = rbind,
-                        args = items) %>%
-                "["(names(.) %ni% param_names) %>%
-                set_rownames(NULL)
+  items   %<>% "["(names(.) %ni% param_names)
 
   return(list(items = items,
               resp  = resp))
 
 } # END simulate_mupp_responses FUNCTION
 
+
+# UTILITY FUNCTIONS #
+
+# determine MUPP probability matrix/list based on number of items
+determine_mupp_probs_  <- function(items,
+                                   persons,
+                                   item_name = "item",
+                                   ...){
+
+  # split items so that different items are different list elements
+  items %<>% split(.[[item_name]])
+
+  # determining probabilities
+  probs   <- lapply(items,
+                    FUN     = determine_mupp_probs1,
+                    persons = persons,
+                    ...)
+
+  return(probs)
+
+} # END determine_mupp_probs_ FUNCTION
 
 determine_mupp_probs1 <- function(item,
                                   persons,
@@ -265,6 +239,15 @@ determine_mupp_probs1 <- function(item,
   return(probs)
 
 } # END determine_mupp_probs1 FUNCTION
+
+# simulate MUPP responses (to one/multiple items)
+simulate_mupp_resp_ <- function(probs){
+
+  # simulating responses
+  lapply(probs,
+         FUN = simulate_mupp_resp1)
+
+} # END simulate_mupp_resp_ FUNCTION
 
 simulate_mupp_resp1 <- function(probs){
 

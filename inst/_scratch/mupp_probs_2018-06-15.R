@@ -59,9 +59,9 @@ p_mupp_rank <- function(thetas, params, rank_index = 1){
 ## TESTING LIKELIHOOD FCT ... ADD TO TESTTHAT?
 library(tidyr)
 library(magrittr)
-params_sim <- mupp::simulate_mupp_params(n_persons = 1000,
+params_sim <- mupp::simulate_mupp_params(n_persons = 10000,
                                          n_items   = 50,
-                                         n_dims    = 6)
+                                         n_dims    = 2)
 resp_sim   <- do.call(mupp::simulate_mupp_resp, params_sim)
 
 # need thetas, params, items, picked_orders
@@ -95,3 +95,24 @@ loglik      <- log(probs)
 })
 
 all.equal(lik1, loglik)
+
+
+# TESTING MCMC ALGORITHM
+all_par  <- simulate_mupp_params(n_persons = 1000, n_items = 40, n_dims = 2)
+all_resp <- do.call(simulate_mupp_resp, all_par)
+
+resp  <- all_resp$resp
+items <- all_resp$items
+
+out   <- estimate_mupp_params(resp     = resp,
+                              items    = items,
+                              n_iters  = 30000,
+                              n_burnin = 10000)
+
+
+# thetas
+thetas_act <- dcast(all_par$persons, person ~ dim, value.var = "theta")
+cor(out$mean$thetas, thetas_act[ , -1])
+cor(out$mean$alphas, all_par$items$alpha)
+cor(out$mean$deltas, all_par$items$delta)
+cor(out$mean$taus, all_par$items$tau)
