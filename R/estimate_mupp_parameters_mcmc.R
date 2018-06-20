@@ -87,7 +87,7 @@ estimate_mupp_params_mcmc <- function(resp,
   sd_sims         <- Map(sims  = keep_mcmc_steps,
                          means = mean_sims,
                          f     = function(sims, means){
-                           ss  <- Reduce("+", args = lapply(sims, "^", 2))
+                           ss  <- Reduce("+", lapply(sims, "^", 2))
                            len <- length(sims)
                            sds <- sqrt((ss / len - means^2) * (len - 1) / len)
                          })
