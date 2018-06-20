@@ -98,16 +98,17 @@ all.equal(lik1, loglik)
 
 
 # TESTING MCMC ALGORITHM
-all_par  <- simulate_mupp_params(n_persons = 1000, n_items = 40, n_dims = 2)
+all_par  <- simulate_mupp_params(n_persons = 500, n_items = 40, n_dims = 2)
 all_resp <- do.call(simulate_mupp_resp, all_par)
 
 resp  <- all_resp$resp
 items <- all_resp$items
 
-out   <- estimate_mupp_params(resp     = resp,
-                              items    = items,
-                              n_iters  = 30000,
-                              n_burnin = 10000)
+out   <- estimate_mupp_params(resp       = resp,
+                              items      = items,
+                              n_iters    = 4000,
+                              n_burnin   = 2000,
+                              delta_sign = sign(all_par$items$delta))
 
 
 # thetas

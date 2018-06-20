@@ -1,6 +1,6 @@
 # ARGUMENT CHECKS #
 
-# check to make sure all names is in df and return df in appropriate order
+# a # check to make sure all names is in df and return df in appropriate order
 check_names <- function(df, names){
 
   # pull out argument name AND round argument
@@ -17,7 +17,7 @@ check_names <- function(df, names){
 } # END check_names FUNCTION
 
 
-# ensure argument is within numeric range
+# b # ensure argument is within numeric range
 check_numeric <- function(arg,
                           min_number = 1){
 
@@ -33,3 +33,31 @@ check_numeric <- function(arg,
 
   return(arg)
 } # END check_numeric FUNCTION
+
+
+# FIXING DATA FRAMES #
+
+# a # fixing columns to be numeric and in order
+sequence_column <- function(df,
+                            column,
+                            old_values = NULL){
+
+  # all of the values/unique old values/unique new values
+  old_values_all <- df[[column]]
+
+  # allow for specifying old values
+  if(is.null(old_values)){
+    old_values  <- unique(old_values_all)
+  } # END if STATEMENT
+
+  new_values     <- seq_along(old_values)
+
+  # determining new names (for all rows)
+  new_values_all <- new_values[match(old_values_all, old_values)]
+
+  # adding back to df
+  df[[column]]    <- new_values_all
+
+  return(df)
+
+} # END sequence_column FUNCTION

@@ -3,7 +3,7 @@
 #' Estimate MUPP statement and person parameters given item responses and item
 #' properties using MCMC
 #'
-#' @param resp a data.frame of (at least) [person, item, n_dims, resp]
+#' @param resp a data.frame of (at least) [person, item, resp]
 #' @param items a data.frame of (at least) [item, statement, dim]
 #' @param method the estimation method (MCMC is the only one that works now)
 #' @param ... other parameters to add later
@@ -34,45 +34,50 @@ estimate_mupp_params <- function(resp,
                      FUN = names)
 
   # ordering the columns
-  resp  <- check_names(resp,
-                       template$resp)
-  items <- check_names(items,
-                       template$items)
+  resp   %<>% check_names(template$resp)
+  items  %<>% check_names(template$items)
 
-  # converting inputs for use in iteration function
+  # extracting variable names
+
+  # overall names
+  resp_names     <- names(resp)
+  item_names     <- names(items)
+
+  # individual names
+  person_name    <- head(resp_names, 1)
+  item_name      <- head(item_names, 1)
+  statement_name <- item_names[2]
+  resp_name      <- tail(resp_names, 1)
 
   # pulling out old item/statement/person and setting new item to index
-  item_name_old      <- unique(items$item)
-  item_name_new      <- seq_along(item_name_old)
+  items_adj      <- sequence_column(df     = items,
+                                    column = item_name) %>%
+                    sequence_column(column = statement_name)
+  resp_adj       <- sequence_column(df     = resp,
+                                    column = person_name) %>%
+                    sequence_column(column = item_name,
+                                    old_values = unique(items[[item_name]]))
 
-  statement_name_old <- unique(items$statement)
-  statement_name_new <- seq_along(statement_name_old)
+  # transforming response to be of the appropriate form
+  cast_resp     <- as.formula(paste0(person_name, "~", item_name))
 
-  person_name_old    <- unique(resp$person)
-  person_name_new    <- seq_along(person_name_old)
-
-  # fixing items/statements to be numeric (should reverse to go back!)
-  items %<>% transform(item      = item_name_new[match(item, item_name_old)],
-                       statement = statement_name_new[match(statement, statement_name_old)])
-  resp  %<>% transform(person    = person_name_new[match(person, person_name_old)],
-                       item      = item_name_new[match(item, item_name_old)])
-
-  # transform response to be of the appropriate form
-  resp    <- dcast(as.data.table(resp),
-                   formula   = person ~ item,
-                   value.var = "resp")[ , -1] %>%
-             as.matrix()
+  resp_adj      <- dcast(data      = as.data.table(resp_adj),
+                         formula   = cast_resp,
+                         value.var = resp_name)[ , -1] %>%
+                   as.matrix()
 
   # run algorithm
   if(any(tolower(method) == "mcmc")){
-    out <- estimate_mupp_params_mcmc(resp, items, ...)
+    out <- estimate_mupp_params_mcmc(resp  = resp_adj,
+                                     items = items_adj,
+                                     ...)
   } else{
     stop(method, " method not implemented at this time.")
   } # END ifelse STATEMENT
 
   return(out)
 
-} # END simulate_mupp_params FUNCTION
+} # END estimate_mupp_params FUNCTION
 
 
 # ESTIMATION: MCMC OVERALL #
