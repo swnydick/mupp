@@ -62,24 +62,34 @@ NumericMatrix select_rows(NumericMatrix X,
 }
 
 /* GGUM STUFF
- *  - exp_ggum
+ *  - exp_ggum/exp_ggum_c
  *  - p_ggum/q_ggum_all
  *  - p_der1_theta_ggum
  */
-NumericVector exp_ggum(NumericVector thetas,
-                       NumericVector params,
+
+NumericVector exp_ggum(SEXP thetas,
+                       SEXP params,
                        int exp_mult = 1) {
 
-  // Arguments:
-  //  - thetas: a vector of thetas across all people
-  //  - params: a vector of params for one item [alpha, delta, tau]
-  // Value:
-  //  - exp(alpha(theta - delta) - tau)
+  // dimensions of objects
+  int n_persons = Rf_xlength(thetas);
+
+  // protect the objects
+  PROTECT(thetas);
+  PROTECT(params);
+
+  // pointers to objects
+  double *pthetas, *pparams;
+  pparams = REAL(params);
+  pthetas = REAL(thetas);
+
+  //declaring return
+  NumericVector exp_1 = no_init(n_persons);
 
   // declaring parameters
-  double alpha = params[0];
-  double delta = params[1];
-  double tau   = params[2];
+  double alpha = pparams[0];
+  double delta = pparams[1];
+  double tau   = pparams[2];
 
   // if mult is greater than 3, set tau to 0
   // if mult is outside the range of [1, 3], fix
@@ -90,30 +100,74 @@ NumericVector exp_ggum(NumericVector thetas,
     exp_mult = 1;
   }
 
-  NumericVector exp_1 = exp(alpha * (exp_mult * (thetas - delta) - tau));
+  for(int p = 0; p < n_persons; p++){
+    exp_1[p] = exp(alpha * (exp_mult * (pthetas[p] - delta) - tau));
+  }
+
+  UNPROTECT(2);
 
   return exp_1;
+
 }
 
-NumericVector q_ggum(NumericVector thetas,
-                     NumericVector params) {
+double exp_ggum_c(double theta,
+                  double alpha,
+                  double delta,
+                  double tau,
+                  int    exp_mult = 1){
 
-  // Arguments:
-  //  - thetas: a vector of thetas across all people
-  //  - params: a vector of params for one item [alpha, delta, tau]
-  // Value:
-  //  - P(Z_s = 0 | thetas) for a single parameter set
+  // if mult is greater than 3, set tau to 0
+  // if mult is outside the range of [1, 3], fix
+  if(exp_mult >= 3){
+    exp_mult = 3;
+    tau      = 0;
+  } else if(exp_mult <= 0){
+    exp_mult = 1;
+  }
 
-  // calculate exponent expressions
-  NumericVector exp_12 = exp_ggum(thetas, params, 1) +
-                         exp_ggum(thetas, params, 2);
-  NumericVector exp_03 = 1 +
-                         exp_ggum(thetas, params, 3);
+  double exp_1 = exp(alpha * (exp_mult * (theta - delta) - tau));
 
-  // calculate probabilities
-  NumericVector probs  = exp_03 / (exp_12 + exp_03);
+  return exp_1;
+
+}
+
+NumericVector q_ggum(SEXP thetas,
+                     SEXP params) {
+
+  // dimensions of objects
+  int n_persons = Rf_xlength(thetas);
+
+  // protect the objects
+  PROTECT(thetas);
+  PROTECT(params);
+
+  // pointers to objects
+  double *pthetas, *pparams;
+  pparams = REAL(params);
+  pthetas = REAL(thetas);
+
+  //declaring return
+  NumericVector probs = no_init(n_persons);
+
+  // declaring parameters
+  double alpha = pparams[0];
+  double delta = pparams[1];
+  double tau   = pparams[2];
+  double theta, exp_03, exp_12;
+
+  // calculating probability for each combination ...
+  for(int p = 0; p < n_persons; p++){
+    theta    = pthetas[p];
+    exp_03   = exp_ggum_c(theta, alpha, delta, tau, 3);
+    exp_12   = exp_ggum_c(theta, alpha, delta, tau, 1) +
+               exp_ggum_c(theta, alpha, delta, tau, 2);
+    probs[p] = (1 + exp_03) / (1 + exp_03 + exp_12);
+  }
+
+  UNPROTECT(2);
 
   return probs;
+
 }
 
 NumericMatrix q_ggum_all(NumericMatrix thetas,
@@ -128,13 +182,18 @@ NumericMatrix q_ggum_all(NumericMatrix thetas,
   // declare number of persons/dimensions
   int n_persons = thetas.nrow();
   int n_dims    = params.nrow();
+  int n_param   = params.ncol();
 
   // indicating return vector
-  NumericMatrix probs(n_persons, n_dims);
+  NumericVector theta = no_init(n_persons);
+  NumericVector param = no_init(n_param);
+  NumericMatrix probs(Rf_allocMatrix(REALSXP, n_persons, n_dims));
 
   // calculating probabilities across all dimensions
   for(int dim = 0; dim < n_dims; dim++){
-    probs(_, dim) = q_ggum(thetas(_, dim), params(dim, _));
+    theta         = thetas(_, dim);
+    param         = params(dim, _);
+    probs(_, dim) = q_ggum(theta, param);
   }
 
   return probs;

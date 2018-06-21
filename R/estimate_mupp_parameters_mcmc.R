@@ -153,11 +153,8 @@ update_mupp_thetas_mcmc <- function(mcmc_envir){
                                      priors_new = priors_pers$new)
 
   # updating thetas and items
-  thetas_old[persons_new, ] <- thetas_new[persons_new, ]
-  loglik_old[persons_new, ] <- logliks$new[persons_new, ]
-
-  # replacing in environment
-  mcmc_envir$loglik         <- loglik_old
+  thetas_old[persons_new, ]        <- thetas_new[persons_new, ]
+  mcmc_envir$loglik[persons_new, ] <- logliks$new[persons_new, ]
 
   # return
   return(thetas_old)
@@ -219,11 +216,8 @@ update_mupp_params_mcmc <- function(mcmc_envir,
   state_new    <- items[ , 1] %in% seq_along(items_new)[items_new]
 
   # updating params and items
-  params_old[state_new]    <- params_new[state_new]
-  loglik_old[ , items_new] <- logliks$new[ , items_new]
-
-  # replacing in environment
-  mcmc_envir$loglik        <- loglik_old
+  params_old[state_new]           <- params_new[state_new]
+  mcmc_envir$loglik[ , items_new] <- logliks$new[ , items_new]
 
   # return
   return(params_old)
