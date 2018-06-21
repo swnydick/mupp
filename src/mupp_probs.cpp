@@ -19,44 +19,48 @@ using namespace Rcpp;
  *   - select_rows (select non-proximate rows)
  *   - find_all_permutations (permutation matrix)
  */
-NumericMatrix select_cols(NumericMatrix X,
-                          IntegerVector ind) {
 
- // Arguments:
- //  - X:   a matrix to select columns
- //  - ind: an integer vector of columns to select
+NumericMatrix select_cols(const NumericMatrix & X,
+                          const IntegerVector & ind) {
 
- // capturing constants
- int out_cols = ind.size();
+  // Arguments:
+  //  - X:   a matrix to select columns
+  //  - ind: an integer vector of columns to select
 
- // declaring output
- NumericMatrix Y(X.nrow(), out_cols);
+  // capturing constants
+  int out_cols = ind.size();
+  int out_rows = X.nrow();
 
- // iterating
- for(int i = 0; i < out_cols; i++){
-   Y(_, i) = X(_, ind[i]);
- }
+  NumericMatrix Y(Rf_allocMatrix(REALSXP, out_rows, out_cols));
+
+  for(int j = 0; j < out_cols; j++){
+    for(int i = 0; i < out_rows; i++){
+      Y[i + j * out_rows] = X[i + ind[j] * out_rows];
+    }
+  }
 
   return Y;
 }
 
-NumericMatrix select_rows(NumericMatrix X,
-                          IntegerVector ind) {
+NumericMatrix select_rows(const NumericMatrix & X,
+                          const IntegerVector & ind) {
 
- // Arguments:
- //  - X:   a matrix to select columns
- //  - ind: an integer vector of columns to select
+  // Arguments:
+  //  - X:   a matrix to select rows
+  //  - ind: an integer vector of rows to select
 
- // capturing constants
- int out_rows = ind.size();
+  // capturing constants
+  int out_rows = ind.size();
+  int out_cols = X.ncol();
+  int inp_rows = X.nrow();
 
- // declaring output
- NumericMatrix Y(out_rows, X.ncol());
+  NumericMatrix Y(Rf_allocMatrix(REALSXP, out_rows, out_cols));
 
- // iterating
- for(int i = 0; i < out_rows; i++){
-   Y(i, _) = X(ind[i], _);
- }
+  for(int j = 0; j < out_cols; j++){
+    for(int i = 0; i < out_rows; i++){
+      Y[i + j * out_rows] = X[ind[i] + j * inp_rows];
+    }
+  }
 
   return Y;
 }
@@ -67,8 +71,8 @@ NumericMatrix select_rows(NumericMatrix X,
  *  - p_der1_theta_ggum
  */
 
-NumericVector exp_ggum(SEXP thetas,
-                       SEXP params,
+NumericVector exp_ggum(const SEXP & thetas,
+                       const SEXP & params,
                        int exp_mult = 1) {
 
   // dimensions of objects
@@ -110,9 +114,9 @@ NumericVector exp_ggum(SEXP thetas,
 
 }
 
-double exp_ggum_c(double theta,
-                  double alpha,
-                  double delta,
+double exp_ggum_c(const double theta,
+                  const double alpha,
+                  const double delta,
                   double tau,
                   int    exp_mult = 1){
 
@@ -131,8 +135,8 @@ double exp_ggum_c(double theta,
 
 }
 
-NumericVector q_ggum(SEXP thetas,
-                     SEXP params) {
+NumericVector q_ggum(const SEXP & thetas,
+                     const SEXP & params) {
 
   // dimensions of objects
   int n_persons = Rf_xlength(thetas);
@@ -170,8 +174,9 @@ NumericVector q_ggum(SEXP thetas,
 
 }
 
-NumericMatrix q_ggum_all(NumericMatrix thetas,
-                         NumericMatrix params) {
+//[[Rcpp::export]]
+NumericMatrix q_ggum_all(const NumericMatrix & thetas,
+                         const NumericMatrix & params) {
 
   // Arguments:
   //  - thetas: a matrix of thetas across all people/dims
@@ -199,8 +204,8 @@ NumericMatrix q_ggum_all(NumericMatrix thetas,
   return probs;
 }
 
-NumericVector pder1_theta_ggum(NumericVector thetas,
-                               NumericVector params) {
+NumericVector pder1_theta_ggum(const NumericVector & thetas,
+                               const NumericVector & params) {
 
   // Arguments:
   //  - thetas: a vector of thetas across all people
@@ -225,8 +230,8 @@ NumericVector pder1_theta_ggum(NumericVector thetas,
 }
 
 // [[Rcpp::export]]
-NumericMatrix pder1_theta_ggum_all(NumericMatrix thetas,
-                                   NumericMatrix params) {
+NumericMatrix pder1_theta_ggum_all(const NumericMatrix & thetas,
+                                   const NumericMatrix & params) {
 
   // Arguments:
   //  - thetas: a matrix of thetas across all people/dims
@@ -257,8 +262,8 @@ NumericMatrix pder1_theta_ggum_all(NumericMatrix thetas,
  *                        all possible order combinations
  */
 
-NumericVector p_mupp_pick0(NumericMatrix Q,
-                           int picked_dim = 1) {
+NumericVector p_mupp_pick0(const NumericMatrix & Q,
+                           const int picked_dim = 1) {
 
   // Arguments:
   //  - Q: a vector of probability of NOT selecting each option
@@ -285,8 +290,8 @@ NumericVector p_mupp_pick0(NumericMatrix Q,
   return probs;
 }
 
-NumericVector p_mupp_pick1(NumericMatrix Q,
-                           int picked_dim = 1) {
+NumericVector p_mupp_pick1(const NumericMatrix & Q,
+                           const int picked_dim = 1) {
 
   // Arguments:
   //  - Q: a vector of probability of NOT selecting each option
@@ -299,9 +304,9 @@ NumericVector p_mupp_pick1(NumericMatrix Q,
   int n_dims    = Q.ncol();
 
   // vectors to store stuff
-  NumericVector numer(n_persons);
-  NumericVector denom(n_persons);
-  NumericVector p(n_persons);
+  NumericVector numer(n_persons, 0.0);
+  NumericVector denom(n_persons, 0.0);
+  NumericVector p = no_init(n_persons);
 
   // calculating probability across picked dimension
   for(int dim = 0; dim < n_dims; dim++){
@@ -320,8 +325,8 @@ NumericVector p_mupp_pick1(NumericMatrix Q,
   return numer / (numer + denom);
 }
 
-NumericVector p_mupp_rank1(NumericMatrix Q,
-                           IntegerVector order){
+NumericVector p_mupp_rank1(const NumericMatrix & Q,
+                           const IntegerVector order){
 
   // Arguments:
   //  - Q: a vector of probability of NOT selecting each option
@@ -348,8 +353,8 @@ NumericVector p_mupp_rank1(NumericMatrix Q,
 }
 
 // [[Rcpp::export]]
-NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
-                               NumericMatrix params,
+NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
+                               const NumericMatrix & params,
                                IntegerVector dims            = NA_INTEGER,
                                IntegerVector picked_order_id = NA_INTEGER) {
 
@@ -429,8 +434,8 @@ NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
     n_orders = 1;
 
     // temporary vectors to store the Q_person and picked_order
-    NumericVector Q_person(n_params);
-    IntegerVector picked_order(n_params);
+    NumericVector Q_person     = no_init(n_params);
+    IntegerVector picked_order = no_init(n_params);
 
     // for each person, rearrange Q so that [1, 2, 3, ...] is PICKED order ...
     for(int person = 0; person < n_persons; person++){
@@ -452,10 +457,10 @@ NumericMatrix p_mupp_rank_impl(NumericMatrix thetas,
 }
 
 //[[Rcpp::export]]
-NumericMatrix loglik_mupp_rank_impl(NumericMatrix thetas,
-                                    NumericMatrix params,
-                                    IntegerMatrix items,
-                                    IntegerMatrix picked_orders){
+NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
+                                    const NumericMatrix & params,
+                                    const IntegerMatrix & items,
+                                    const IntegerMatrix & picked_orders){
 
   // Arguments:
   //  - thetas: matrix of persons x dims (for all dims)
@@ -521,9 +526,9 @@ NumericMatrix loglik_mupp_rank_impl(NumericMatrix thetas,
   }
 
   // indicate return matrix and temporary vectors
-  NumericMatrix loglik(n_persons, n_items);
-  NumericVector p(n_persons);
-  LogicalVector item_flag(n_rows_items);
+  NumericMatrix loglik(Rf_allocMatrix(REALSXP, n_persons, n_items));
+  NumericVector p         = no_init(n_persons);
+  LogicalVector item_flag = no_init(n_rows_items);
 
   for(int item = 0; item < n_items; item++){
 

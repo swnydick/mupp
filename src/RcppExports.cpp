@@ -17,26 +17,38 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// q_ggum_all
+NumericMatrix q_ggum_all(const NumericMatrix& thetas, const NumericMatrix& params);
+RcppExport SEXP _mupp_q_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(q_ggum_all(thetas, params));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pder1_theta_ggum_all
-NumericMatrix pder1_theta_ggum_all(NumericMatrix thetas, NumericMatrix params);
+NumericMatrix pder1_theta_ggum_all(const NumericMatrix& thetas, const NumericMatrix& params);
 RcppExport SEXP _mupp_pder1_theta_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type thetas(thetasSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
     rcpp_result_gen = Rcpp::wrap(pder1_theta_ggum_all(thetas, params));
     return rcpp_result_gen;
 END_RCPP
 }
 // p_mupp_rank_impl
-NumericMatrix p_mupp_rank_impl(NumericMatrix thetas, NumericMatrix params, IntegerVector dims, IntegerVector picked_order_id);
+NumericMatrix p_mupp_rank_impl(const NumericMatrix& thetas, const NumericMatrix& params, IntegerVector dims, IntegerVector picked_order_id);
 RcppExport SEXP _mupp_p_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP dimsSEXP, SEXP picked_order_idSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type thetas(thetasSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type picked_order_id(picked_order_idSEXP);
     rcpp_result_gen = Rcpp::wrap(p_mupp_rank_impl(thetas, params, dims, picked_order_id));
@@ -44,15 +56,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // loglik_mupp_rank_impl
-NumericMatrix loglik_mupp_rank_impl(NumericMatrix thetas, NumericMatrix params, IntegerMatrix items, IntegerMatrix picked_orders);
+NumericMatrix loglik_mupp_rank_impl(const NumericMatrix& thetas, const NumericMatrix& params, const IntegerMatrix& items, const IntegerMatrix& picked_orders);
 RcppExport SEXP _mupp_loglik_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP itemsSEXP, SEXP picked_ordersSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type thetas(thetasSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type params(paramsSEXP);
-    Rcpp::traits::input_parameter< IntegerMatrix >::type items(itemsSEXP);
-    Rcpp::traits::input_parameter< IntegerMatrix >::type picked_orders(picked_ordersSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type items(itemsSEXP);
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type picked_orders(picked_ordersSEXP);
     rcpp_result_gen = Rcpp::wrap(loglik_mupp_rank_impl(thetas, params, items, picked_orders));
     return rcpp_result_gen;
 END_RCPP
@@ -60,6 +72,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mupp_find_all_permutations", (DL_FUNC) &_mupp_find_all_permutations, 2},
+    {"_mupp_q_ggum_all", (DL_FUNC) &_mupp_q_ggum_all, 2},
     {"_mupp_pder1_theta_ggum_all", (DL_FUNC) &_mupp_pder1_theta_ggum_all, 2},
     {"_mupp_p_mupp_rank_impl", (DL_FUNC) &_mupp_p_mupp_rank_impl, 4},
     {"_mupp_loglik_mupp_rank_impl", (DL_FUNC) &_mupp_loglik_mupp_rank_impl, 4},

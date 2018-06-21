@@ -24,6 +24,10 @@ find_all_permutations <- function(n, init = 0L) {
     .Call(`_mupp_find_all_permutations`, n, init)
 }
 
+q_ggum_all <- function(thetas, params) {
+    .Call(`_mupp_q_ggum_all`, thetas, params)
+}
+
 pder1_theta_ggum_all <- function(thetas, params) {
     .Call(`_mupp_pder1_theta_ggum_all`, thetas, params)
 }

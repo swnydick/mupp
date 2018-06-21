@@ -51,8 +51,9 @@ IntegerMatrix find_all_permutations(int n,
 // SELECT COLS/SELECT ROWS //
 ////////////////////////////
 
-NumericMatrix select_cols(NumericMatrix X,
-                          IntegerVector ind) {
+// [[Rcpp::export]]
+NumericMatrix select_cols0(NumericMatrix X,
+                           IntegerVector ind) {
 
  // Arguments:
  //  - X:   a matrix to select columns
@@ -71,6 +72,43 @@ NumericMatrix select_cols(NumericMatrix X,
 
   return Y;
 }
+
+
+// [[Rcpp::export]]
+NumericMatrix select_cols(NumericMatrix X,
+                          IntegerVector ind) {
+
+  // Arguments:
+  //  - X:   a matrix to select columns
+  //  - ind: an integer vector of columns to select
+
+  // capturing constants
+  int out_cols = ind.size();
+  int out_rows = X.nrow();
+
+  NumericMatrix Y(Rf_allocMatrix(REALSXP, out_rows, out_cols));
+
+   for(int j = 0; j < out_cols; j++){
+     for(int i = 0; i < out_rows; i++){
+       Y[i + j * out_rows] = X[i + ind[j] * out_rows];
+     }
+   }
+
+  return Y;
+}
+
+/*** R
+library(microbenchmark)
+nrow <- 20
+ncol <- 4000
+
+mat  <- matrix(rnorm(nrow * ncol), nrow = nrow)
+ind  <- sample(x = ncol, size = 10) - 1
+
+microbenchmark(x <- select_cols0(mat, ind),
+               y <- select_cols(mat, ind))
+
+*/
 
 NumericMatrix select_rows(NumericMatrix X,
                           IntegerVector ind) {
@@ -452,7 +490,10 @@ microbenchmark(a <- q_ggum_all0(thetas, params),
 # q_ggum is faster
 */
 
-//
+///////////////
+// QDER GGUM //
+///////////////
+
 // NumericVector pder1_theta_ggum(NumericVector thetas,
 //                                NumericVector params) {
 //
@@ -503,41 +544,136 @@ microbenchmark(a <- q_ggum_all0(thetas, params),
 //   return dprobs;
 // }
 //
-// /* MUPP STUFF
-//  *   - p_mupp_pick0     - numerator (individual component) of PICK probability
-//  *   - p_mupp_pick1     - OVERALL PICK probability
-//  *   - p_mupp_rank1     - OVERALL RANK probability
-//  *   - p_mupp_rank_impl - OVERALL RANK probability for an individual order OR
-//  *                        all possible order combinations
-//  */
-//
-// NumericVector p_mupp_pick0(NumericMatrix Q,
-//                            int picked_dim = 1) {
-//
-//   // Arguments:
-//   //  - Q: a vector of probability of NOT selecting each option
-//   //  - picked_dim: the picked dimension
-//   // Value:
-//   //  - P(Z_s = 1 | thetas) individual element where s is the selected option
-//
-//   // declare number of persons/dimensions
-//   int n_persons = Q.nrow();
-//   int n_dims    = Q.ncol();
-//
-//   // vectors to store stuff
-//   NumericVector probs(n_persons, 1.0);
-//
-//   // calculating (intersection) probability across picked dimension
-//   for(int dim = 0; dim < n_dims; dim++){
-//     if(dim == picked_dim){
-//       probs = probs * (1 - Q(_, dim));
-//     } else{
-//       probs = probs * Q(_, dim);
-//     }
-//   }
-//
-//   return probs;
-// }
+
+/////////////////
+// P MUPP PICK0 /
+/////////////////
+
+// [[Rcpp::export]]
+NumericVector p_mupp_pick00(NumericMatrix Q,
+                            int picked_dim = 1) {
+
+  // Arguments:
+  //  - Q: a vector of probability of NOT selecting each option
+  //  - picked_dim: the picked dimension
+  // Value:
+  //  - P(Z_s = 1 | thetas) individual element where s is the selected option
+
+  // declare number of persons/dimensions
+  int n_persons = Q.nrow();
+  int n_dims    = Q.ncol();
+
+  // vectors to store stuff
+  NumericVector probs(n_persons, 1.0);
+
+  // calculating (intersection) probability across picked dimension
+  for(int dim = 0; dim < n_dims; dim++){
+    if(dim == picked_dim){
+      probs = probs * (1 - Q(_, dim));
+    } else{
+      probs = probs * Q(_, dim);
+    }
+  }
+
+  return probs;
+}
+
+// [[Rcpp::export]]
+NumericVector p_mupp_pick01(const NumericMatrix& Q,
+                            int picked_dim = 1) {
+
+  // Arguments:
+  //  - Q: a vector of probability of NOT selecting each option
+  //  - picked_dim: the picked dimension
+  // Value:
+  //  - P(Z_s = 1 | thetas) individual element where s is the selected option
+
+  // declare number of persons/dimensions
+  int n_persons = Q.nrow();
+  int n_dims    = Q.ncol();
+
+  // vectors to store stuff
+  NumericVector probs(n_persons, 1.0);
+
+  // calculating (intersection) probability across picked dimension
+  for(int dim = 0; dim < n_dims; dim++){
+    if(dim == picked_dim){
+      probs = probs * (1 - Q(_, dim));
+    } else{
+      probs = probs * Q(_, dim);
+    }
+  }
+
+  return probs;
+}
+
+# define get_dims(A) INTEGER(Rf_getAttrib(Q, R_DimSymbol));
+
+// [[Rcpp::export]]
+NumericVector p_mupp_pick0(const SEXP& Q,
+                           int picked_dim = 1) {
+
+  // Arguments:
+  //  - Q: a vector of probability of NOT selecting each option
+  //  - picked_dim: the picked dimension
+  // Value:
+  //  - P(Z_s = 1 | thetas) individual element where s is the selected option
+
+  // obtaining Q attributes
+  int *dim_Q;
+
+  dim_Q = get_dims(Q);
+
+  // declare number of persons/dimensions
+  int n_persons = 5000; //dim_Q[0];
+  int n_dims    = 5; //dim_Q[1];
+
+  // protect the objects
+  PROTECT(Q);
+
+  // pointers to objects
+  double *pQ;
+  pQ = REAL(Q);
+
+  // vectors to store stuff
+  NumericVector probs(n_persons, 1.0);
+  double q;
+
+  // calculating (intersection) probability across picked dimension
+  for(int pers = 0; pers < n_persons; pers++){
+    for(int dim = 0; dim < n_dims; dim++){
+      q = pQ[pers + n_persons * dim];
+      if(dim == picked_dim){
+        probs[pers] *= (1 - q);
+      } else{
+        probs[pers] *= q;
+      }
+    }
+  }
+
+  UNPROTECT(1);
+
+  return probs;
+}
+
+/*** R
+library(microbenchmark)
+
+thetas <- cbind(rnorm(5000), rnorm(5000), rnorm(5000), rnorm(5000), rnorm(5000))
+params <- rbind(c(1, 0, -1),
+                c(.8, 2, 2),
+                c(1.2, -1, 3),
+                c(1, 1, 1),
+                c(4, 3, 3))
+Q      <- q_ggum_all(thetas, params)
+
+microbenchmark(a <- p_mupp_pick00(Q, 1),
+               b <- p_mupp_pick01(Q, 1),
+               d <- p_mupp_pick0(Q, 1))
+
+# q_ggum is faster
+*/
+
 //
 // NumericVector p_mupp_pick1(NumericMatrix Q,
 //                            int picked_dim = 1) {
