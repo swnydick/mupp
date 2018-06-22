@@ -8,53 +8,11 @@
 #include "mupp_utilities.h"
 using namespace Rcpp;
 
-NumericVector exp_ggum(const SEXP & thetas,
-                       const SEXP & params,
-                       int exp_mult = 1) {
-
-  // dimensions of objects
-  int n_persons = Rf_xlength(thetas);
-
-  // protect the objects
-  PROTECT(thetas);
-  PROTECT(params);
-
-  // pointers to objects
-  double *pthetas, *pparams;
-  pparams = REAL(params);
-  pthetas = REAL(thetas);
-
-  //declaring return
-  NumericVector exp_out = no_init(n_persons);
-
-  // declaring parameters
-  double alpha = pparams[0];
-  double delta = pparams[1];
-  double tau   = pparams[2];
-
-  // if mult is greater than 3, set tau to 0
-  // if mult is outside the range of [1, 3], fix
-  if(exp_mult >= 3){
-    exp_mult = 3;
-    tau      = 0;
-  } else if(exp_mult <= 0){
-    exp_mult = 1;
-  }
-
-  for(int p = 0; p < n_persons; p++){
-    exp_out[p] = exp(alpha * (exp_mult * (pthetas[p] - delta) - tau));
-  }
-
-  UNPROTECT(2);
-
-  return exp_out;
-}
-
-double exp_ggum_c(const double theta,
-                  const double alpha,
-                  const double delta,
-                  double tau,
-                  int    exp_mult = 1){
+double exp_ggum(const double theta,
+                const double alpha,
+                const double delta,
+                double tau,
+                int    exp_mult = 1){
 
   // if mult is greater than 3, set tau to 0
   // if mult is outside the range of [1, 3], fix
@@ -103,9 +61,9 @@ NumericVector q_ggum(const SEXP & thetas,
   // calculating probability for each combination ...
   for(int p = 0; p < n_persons; p++){
     theta    = pthetas[p];
-    exp_03   = exp_ggum_c(theta, alpha, delta, tau, 3);
-    exp_12   = exp_ggum_c(theta, alpha, delta, tau, 1) +
-               exp_ggum_c(theta, alpha, delta, tau, 2);
+    exp_03   = exp_ggum(theta, alpha, delta, tau, 3);
+    exp_12   = exp_ggum(theta, alpha, delta, tau, 1) +
+               exp_ggum(theta, alpha, delta, tau, 2);
     probs[p] = (1 + exp_03) / (1 + exp_03 + exp_12);
   }
 
@@ -178,9 +136,9 @@ NumericVector pder1_theta_ggum(const SEXP & thetas,
   // calculating derivatives for each combination ...
   for(int p = 0; p < n_persons; p++){
     theta = pthetas[p];
-    exp_1 = exp_ggum_c(theta, alpha, delta, tau, 1);
-    exp_2 = exp_ggum_c(theta, alpha, delta, tau, 2);
-    exp_3 = exp_ggum_c(theta, alpha, delta, tau, 3);
+    exp_1 = exp_ggum(theta, alpha, delta, tau, 1);
+    exp_2 = exp_ggum(theta, alpha, delta, tau, 2);
+    exp_3 = exp_ggum(theta, alpha, delta, tau, 3);
     dprobs[p] = alpha * (exp_1 * (1 - 2 * exp_3) *
                          exp_2 * (2 - 1 * exp_3)) /
                 pow((1 + exp_1 + exp_2 + exp_3), 2);
