@@ -95,9 +95,9 @@ NumericMatrix q_ggum_all(const NumericMatrix & thetas,
 
   // calculating probabilities across all dimensions
   for(int dim = 0; dim < n_dims; dim++){
-    theta         = thetas(_, dim);
-    param         = params(dim, _);
-    probs(_, dim) = q_ggum(theta, param);
+    theta             = thetas.column(dim);
+    param             = params.row(dim);
+    probs.column(dim) = q_ggum(theta, param);
   }
 
   return probs;
@@ -172,9 +172,9 @@ NumericMatrix pder1_ggum_all(const NumericMatrix & thetas,
 
   // calculating probabilities across all dimensions
   for(int dim = 0; dim < n_dims; dim++){
-    theta          = thetas(_, dim);
-    param          = params(dim, _);
-    dprobs(_, dim) = pder1_ggum(theta, param);
+    theta              = thetas.column(dim);
+    param              = params.row(dim);
+    dprobs.column(dim) = pder1_ggum(theta, param);
   }
 
   return dprobs;

@@ -111,9 +111,9 @@ NumericVector p_mupp_pick0(const NumericMatrix & Q,
   // calculating (intersection) probability across picked dimension
   for(int dim = 0; dim < n_dims; dim++){
     if(dim == picked_dim){
-      probs = probs * (1 - Q(_, dim));
+      probs = probs * (1 - Q.column(dim));
     } else{
-      probs = probs * Q(_, dim);
+      probs = probs * Q.column(dim);
     }
   }
 
@@ -180,6 +180,61 @@ NumericVector p_mupp_rank1(const NumericMatrix & Q,
   }
 
   return probs;
+}
+
+NumericMatrix pder1_mupp_rank1(const NumericMatrix & P,
+                               const NumericMatrix & dP,
+                               const IntegerVector order){
+
+  // Arguments:
+  //  - P:  a matrix of probability of selecting each option
+  //  - dP: derivative of the probability matrix (same dimensions as P)
+  //  - order: the order of the output
+  // Value:
+  //  - P'(Z_s = 1 | thetas) for s and t
+
+  // declare number of persons/dimensions
+  int n_persons  = P.nrow();
+  int n_dims_all = P.ncol();
+  int n_dims     = order.size();
+
+  // argument checks
+  if(n_persons != dP.nrow()){
+    stop("P and dP do not have the same number of rows");
+  }
+
+  if(n_dims_all != dP.ncol()){
+    stop("P and dP do not have the same number of columns");
+  }
+
+  if(n_dims != 2){
+    stop("pder1_mupp_rank1 only provides derivatives for 2 dimensions, so far");
+  }
+
+  // indicating matrices to store things
+  NumericMatrix P_o  = select_cols(P, order);
+  NumericMatrix dP_o = select_cols(dP, order);
+  int dim, alt, out;
+
+  // indicating return matrix
+  NumericMatrix dprobs(Rf_allocMatrix(REALSXP, n_persons, n_dims));
+
+  // fixing probabilities/derivatives for NOT chosen categories
+  P_o.column(1)  = 1 - P_o.column(1);
+  dP_o.column(1) = -dP_o.column(1);
+
+  // denominator of the model
+  NumericVector denom = P_o.column(0) * P_o.column(1) + (1 - P_o.column(0)) * (1 - P_o.column(1));
+
+  // set dprobs to appropriate column of derivative matrix
+  for(dim = 0; dim < n_dims; dim++){
+    alt                = n_dims - dim - 1;
+    out                = order[dim];
+    dprobs.column(out) = (dP_o.column(dim) * P_o.column(alt) * (denom + P_o.column(dim))) / pow(denom, 2);
+  }
+
+  return dprobs;
+
 }
 
 // [[Rcpp::export]]
@@ -278,9 +333,9 @@ NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
 
     // for each person, rearrange Q so that [1, 2, 3, ...] is PICKED order ...
     for(int person = 0; person < n_persons; person++){
-      picked_order = picked_orders(picked_order_id_c[person], _);
-      Q_person     = Q(person, _);
-      Q(person, _) = as<NumericVector>(Q_person[picked_order]);
+      picked_order  = picked_orders.row(picked_order_id_c[person]);
+      Q_person      = Q.row(person);
+      Q.row(person) = as<NumericVector>(Q_person[picked_order]);
     }
   }
 
@@ -289,7 +344,7 @@ NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
 
   // add all probabilities to return matrix
   for(int perm = 0; perm < n_orders; perm++){
-    probs(_, perm) = p_mupp_rank1(Q, picked_orders(perm, _));
+    probs.column(perm) = p_mupp_rank1(Q, picked_orders.row(perm));
   }
 
   return probs;
@@ -341,9 +396,9 @@ NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
   }
 
   // declare items
-  IntegerVector item_ids      = items(_, 0);
-  IntegerVector statement_ids = items(_, 1) - 1;
-  IntegerVector dim_ids       = items(_, 2);
+  IntegerVector item_ids      = items.column(0);
+  IntegerVector statement_ids = items.column(1) - 1;
+  IntegerVector dim_ids       = items.column(2);
   IntegerVector unique_items  = sort_unique(item_ids);
   int n_items = unique_items.size();
 
@@ -378,10 +433,10 @@ NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
     p         = p_mupp_rank_impl(thetas,
                                  select_rows(params, statement_ids[item_flag]),
                                  dim_ids[item_flag],
-                                 picked_orders(_, item))(_, 0);
+                                 picked_orders.column(item)).column(0);
 
   // calculating likelihood and putting it in matrix
-    loglik(_, item) = log(p);
+    loglik.column(item) = log(p);
   }
 
   return loglik;
