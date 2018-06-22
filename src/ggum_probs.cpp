@@ -103,8 +103,8 @@ NumericMatrix q_ggum_all(const NumericMatrix & thetas,
   return probs;
 }
 
-NumericVector pder1_theta_ggum(const SEXP & thetas,
-                               const SEXP & params) {
+NumericVector pder1_ggum(const SEXP & thetas,
+                         const SEXP & params) {
 
   // Arguments:
   //  - thetas: a matrix/vector of thetas for one dimension
@@ -151,8 +151,8 @@ NumericVector pder1_theta_ggum(const SEXP & thetas,
 }
 
 // [[Rcpp::export]]
-NumericMatrix pder1_theta_ggum_all(const NumericMatrix & thetas,
-                                   const NumericMatrix & params) {
+NumericMatrix pder1_ggum_all(const NumericMatrix & thetas,
+                             const NumericMatrix & params) {
 
   // Arguments:
   //  - thetas: a matrix of thetas across all people/dims
@@ -174,7 +174,7 @@ NumericMatrix pder1_theta_ggum_all(const NumericMatrix & thetas,
   for(int dim = 0; dim < n_dims; dim++){
     theta          = thetas(_, dim);
     param          = params(dim, _);
-    dprobs(_, dim) = pder1_theta_ggum(theta, param);
+    dprobs(_, dim) = pder1_ggum(theta, param);
   }
 
   return dprobs;

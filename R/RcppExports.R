@@ -36,8 +36,8 @@ q_ggum_all <- function(thetas, params) {
     .Call(`_mupp_q_ggum_all`, thetas, params)
 }
 
-pder1_theta_ggum_all <- function(thetas, params) {
-    .Call(`_mupp_pder1_theta_ggum_all`, thetas, params)
+pder1_ggum_all <- function(thetas, params) {
+    .Call(`_mupp_pder1_ggum_all`, thetas, params)
 }
 
 p_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id = NA_integer_) {
