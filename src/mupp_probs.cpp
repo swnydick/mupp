@@ -12,6 +12,7 @@
 
 #include <Rcpp.h>
 #include "mupp_utilities.h"
+#include "ggum_probs.h"
 using namespace Rcpp;
 
 /* HELPER FUNCTIONS
@@ -73,205 +74,14 @@ List saved_permutations = List::create(find_all_permutations(1),
                                        find_all_permutations(5),
                                        find_all_permutations(6));
 
+// extract save permutation (if we have it stored)
 IntegerMatrix extract_permutations(int n,
                                    int init = 0){
-
-  // pull out saved_permutation OR calculate (if not existing)
   if(n < saved_permutations.size() & init == 0){
     return saved_permutations[n - 1];
   } else{
     return find_all_permutations(n, init);
   }
-
-}
-
-/* GGUM STUFF
- *  - exp_ggum/exp_ggum_c
- *  - p_ggum/q_ggum_all
- *  - p_der1_theta_ggum
- */
-
-NumericVector exp_ggum(const SEXP & thetas,
-                       const SEXP & params,
-                       int exp_mult = 1) {
-
-  // dimensions of objects
-  int n_persons = Rf_xlength(thetas);
-
-  // protect the objects
-  PROTECT(thetas);
-  PROTECT(params);
-
-  // pointers to objects
-  double *pthetas, *pparams;
-  pparams = REAL(params);
-  pthetas = REAL(thetas);
-
-  //declaring return
-  NumericVector exp_1 = no_init(n_persons);
-
-  // declaring parameters
-  double alpha = pparams[0];
-  double delta = pparams[1];
-  double tau   = pparams[2];
-
-  // if mult is greater than 3, set tau to 0
-  // if mult is outside the range of [1, 3], fix
-  if(exp_mult >= 3){
-    exp_mult = 3;
-    tau      = 0;
-  } else if(exp_mult <= 0){
-    exp_mult = 1;
-  }
-
-  for(int p = 0; p < n_persons; p++){
-    exp_1[p] = exp(alpha * (exp_mult * (pthetas[p] - delta) - tau));
-  }
-
-  UNPROTECT(2);
-
-  return exp_1;
-
-}
-
-double exp_ggum_c(const double theta,
-                  const double alpha,
-                  const double delta,
-                  double tau,
-                  int    exp_mult = 1){
-
-  // if mult is greater than 3, set tau to 0
-  // if mult is outside the range of [1, 3], fix
-  if(exp_mult >= 3){
-    exp_mult = 3;
-    tau      = 0;
-  } else if(exp_mult <= 0){
-    exp_mult = 1;
-  }
-
-  double exp_1 = exp(alpha * (exp_mult * (theta - delta) - tau));
-
-  return exp_1;
-
-}
-
-NumericVector q_ggum(const SEXP & thetas,
-                     const SEXP & params) {
-
-  // dimensions of objects
-  int n_persons = Rf_xlength(thetas);
-
-  // protect the objects
-  PROTECT(thetas);
-  PROTECT(params);
-
-  // pointers to objects
-  double *pthetas, *pparams;
-  pparams = REAL(params);
-  pthetas = REAL(thetas);
-
-  //declaring return
-  NumericVector probs = no_init(n_persons);
-
-  // declaring parameters
-  double alpha = pparams[0];
-  double delta = pparams[1];
-  double tau   = pparams[2];
-  double theta, exp_03, exp_12;
-
-  // calculating probability for each combination ...
-  for(int p = 0; p < n_persons; p++){
-    theta    = pthetas[p];
-    exp_03   = exp_ggum_c(theta, alpha, delta, tau, 3);
-    exp_12   = exp_ggum_c(theta, alpha, delta, tau, 1) +
-               exp_ggum_c(theta, alpha, delta, tau, 2);
-    probs[p] = (1 + exp_03) / (1 + exp_03 + exp_12);
-  }
-
-  UNPROTECT(2);
-
-  return probs;
-
-}
-
-//[[Rcpp::export]]
-NumericMatrix q_ggum_all(const NumericMatrix & thetas,
-                         const NumericMatrix & params) {
-
-  // Arguments:
-  //  - thetas: a matrix of thetas across all people/dims
-  //  - params: a matrix of params for one item [alpha, delta, tau]
-  // Value:
-  //  - P(Z = 0 | thetas) across all dimensions
-
-  // declare number of persons/dimensions
-  int n_persons = thetas.nrow();
-  int n_dims    = params.nrow();
-  int n_param   = params.ncol();
-
-  // indicating return vector
-  NumericVector theta = no_init(n_persons);
-  NumericVector param = no_init(n_param);
-  NumericMatrix probs(Rf_allocMatrix(REALSXP, n_persons, n_dims));
-
-  // calculating probabilities across all dimensions
-  for(int dim = 0; dim < n_dims; dim++){
-    theta         = thetas(_, dim);
-    param         = params(dim, _);
-    probs(_, dim) = q_ggum(theta, param);
-  }
-
-  return probs;
-}
-
-NumericVector pder1_theta_ggum(const NumericVector & thetas,
-                               const NumericVector & params) {
-
-  // Arguments:
-  //  - thetas: a vector of thetas across all people
-  //  - params: a vector of params for one item [alpha, delta, tau]
-  // Value:
-  //  - P'(Z_s = 1 | thetas)
-
-  // declaring parameters
-  double alpha = params[0];
-
-  // calculate exponent expressions
-  NumericVector exp_1 = exp_ggum(thetas, params, 1);
-  NumericVector exp_2 = exp_ggum(thetas, params, 2);
-  NumericVector exp_3 = exp_ggum(thetas, params, 3);
-
-  // calculate derivative of p1 (derivative of p0 is -dp1)
-  NumericVector dprobs = alpha * (exp_1 * (1 - 2 * exp_3) +
-                                  exp_2 * (2 - 1 * exp_3)) /
-                         pow((1 + exp_1 + exp_2 + exp_3), 2);
-
-  return dprobs;
-}
-
-// [[Rcpp::export]]
-NumericMatrix pder1_theta_ggum_all(const NumericMatrix & thetas,
-                                   const NumericMatrix & params) {
-
-  // Arguments:
-  //  - thetas: a matrix of thetas across all people/dims
-  //  - params: a matrix of params for one item [alpha, delta, tau]
-  // Value:
-  //  - P'(Z = 1 | thetas) across all dimensions
-
-  // declare number of persons/dimensions
-  int n_persons = thetas.nrow();
-  int n_dims    = params.nrow();
-
-  // indicating return vector
-  NumericMatrix dprobs(n_persons, n_dims);
-
-  // calculating probabilities across all dimensions
-  for(int dim = 0; dim < n_dims; dim++){
-    dprobs(_, dim) = pder1_theta_ggum(thetas(_, dim), params(dim, _));
-  }
-
-  return dprobs;
 }
 
 /* MUPP STUFF
