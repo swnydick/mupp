@@ -42,26 +42,6 @@ NumericMatrix select_cols(const NumericMatrix & X,
   return Y;
 }
 
-// saved permutations (so we don't have to recreate this all of the time)
-List saved_permutations = List::create(find_all_permutations(1),
-                                       find_all_permutations(2),
-                                       find_all_permutations(3),
-                                       find_all_permutations(4),
-                                       find_all_permutations(5),
-                                       find_all_permutations(6));
-
-IntegerMatrix extract_permutations(int n,
-                                   int init = 0){
-
-  // pull out saved_permutation OR calculate (if not existing)
-  if(n < saved_permutations.size() & init == 0){
-    return saved_permutations[n - 1];
-  } else{
-    return find_all_permutations(n, init);
-  }
-
-}
-
 NumericMatrix select_rows(const NumericMatrix & X,
                           const IntegerVector & ind) {
 
@@ -83,6 +63,26 @@ NumericMatrix select_rows(const NumericMatrix & X,
   }
 
   return Y;
+}
+
+// saved permutations (so we don't have to recreate this all of the time)
+List saved_permutations = List::create(find_all_permutations(1),
+                                       find_all_permutations(2),
+                                       find_all_permutations(3),
+                                       find_all_permutations(4),
+                                       find_all_permutations(5),
+                                       find_all_permutations(6));
+
+IntegerMatrix extract_permutations(int n,
+                                   int init = 0){
+
+  // pull out saved_permutation OR calculate (if not existing)
+  if(n < saved_permutations.size() & init == 0){
+    return saved_permutations[n - 1];
+  } else{
+    return find_all_permutations(n, init);
+  }
+
 }
 
 /* GGUM STUFF
