@@ -379,12 +379,21 @@ NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
   // temporary vectors to store things
   int n_orders;
 
+  // forcing dims and picked order ID to have positive length
+  if(dims.size() == 0){
+    dims = IntegerVector::create(NA_INTEGER);
+  }
+
+  if(picked_order_id.size() == 0){
+    picked_order_id = IntegerVector::create(NA_INTEGER);
+  }
+
   // fixing dims if it is NA or missing
-  if(any(is_na(dims))){
+  if(dims[0] == NA_INTEGER){
     dims = seq_len(n_params);
   }
 
-  if(any(is_na(picked_order_id))){
+  if(picked_order_id[0] == NA_INTEGER){
     picked_order_id = NA_INTEGER;
   } else{
     picked_order_id = rep_len(picked_order_id, n_persons);

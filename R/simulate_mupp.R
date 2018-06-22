@@ -221,13 +221,15 @@ determine_mupp_probs1 <- function(item,
   if(!length(picked_order_name)){
     picked_order <- NA
   } else{
-    picked_order <- item[[picked_order_name]]
-  } # END if STATEMENT
 
-  # check to make sure picked order name is in data
-  if(!length(picked_order)){
-    stop("picked_order_name is not in item data.frame",
-         call. = FALSE)
+    # check to make sure picked order name is in data
+    if(picked_order_name %ni% names(item)){
+      stop("picked_order_name is not in item data.frame",
+           call. = FALSE)
+    } # END if STATEMENT
+
+    picked_order <- item[[picked_order_name]]
+
   } # END if STATEMENT
 
   # calculate probability
