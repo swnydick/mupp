@@ -55,3 +55,4 @@ IntegerMatrix find_all_permutations(int n,
 
   return all_perms;
 }
+

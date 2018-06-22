@@ -17,7 +17,7 @@ using namespace Rcpp;
 /* HELPER FUNCTIONS
  *   - select_cols (select non-proximate columns)
  *   - select_rows (select non-proximate rows)
- *   - find_all_permutations (permutation matrix)
+ *   - extract_permutations
  */
 
 NumericMatrix select_cols(const NumericMatrix & X,
@@ -40,6 +40,26 @@ NumericMatrix select_cols(const NumericMatrix & X,
   }
 
   return Y;
+}
+
+// saved permutations (so we don't have to recreate this all of the time)
+List saved_permutations = List::create(find_all_permutations(1),
+                                       find_all_permutations(2),
+                                       find_all_permutations(3),
+                                       find_all_permutations(4),
+                                       find_all_permutations(5),
+                                       find_all_permutations(6));
+
+IntegerMatrix extract_permutations(int n,
+                                   int init = 0){
+
+  // pull out saved_permutation OR calculate (if not existing)
+  if(n < saved_permutations.size() & init == 0){
+    return saved_permutations[n - 1];
+  } else{
+    return find_all_permutations(n, init);
+  }
+
 }
 
 NumericMatrix select_rows(const NumericMatrix & X,
@@ -420,7 +440,7 @@ NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
   }
 
   // indicate temporary storage vectors
-  IntegerMatrix picked_orders = find_all_permutations(n_dims_item);
+  IntegerMatrix picked_orders = extract_permutations(n_dims_item);
   NumericMatrix Q             = q_ggum_all(select_cols(thetas, dims_c), params);
 
   // Argument Checks (2):
