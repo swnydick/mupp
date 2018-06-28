@@ -14,6 +14,9 @@ Rcpp::NumericVector q_ggum(const SEXP & thetas,
 Rcpp::NumericMatrix q_ggum_all(const Rcpp::NumericMatrix & thetas,
                                const Rcpp::NumericMatrix & params);
 
+Rcpp::NumericMatrix p_ggum_all(const Rcpp::NumericMatrix & thetas,
+                               const Rcpp::NumericMatrix & params);
+
 Rcpp::NumericVector pder1_ggum(const SEXP & thetas,
                                const SEXP & params);
 

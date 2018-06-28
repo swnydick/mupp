@@ -36,12 +36,28 @@ q_ggum_all <- function(thetas, params) {
     .Call(`_mupp_q_ggum_all`, thetas, params)
 }
 
+p_ggum_all <- function(thetas, params) {
+    .Call(`_mupp_p_ggum_all`, thetas, params)
+}
+
 pder1_ggum_all <- function(thetas, params) {
     .Call(`_mupp_pder1_ggum_all`, thetas, params)
 }
 
+extract_permutations <- function(n, init = 0L) {
+    .Call(`_mupp_extract_permutations`, n, init)
+}
+
+pder1_mupp_rank1 <- function(P, dP, order) {
+    .Call(`_mupp_pder1_mupp_rank1`, P, dP, order)
+}
+
 p_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id = NA_integer_) {
     .Call(`_mupp_p_mupp_rank_impl`, thetas, params, dims, picked_order_id)
+}
+
+pder1_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id = NA_integer_) {
+    .Call(`_mupp_pder1_mupp_rank_impl`, thetas, params, dims, picked_order_id)
 }
 
 loglik_mupp_rank_impl <- function(thetas, params, items, picked_orders) {

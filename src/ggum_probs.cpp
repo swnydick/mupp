@@ -103,6 +103,36 @@ NumericMatrix q_ggum_all(const NumericMatrix & thetas,
   return probs;
 }
 
+// [[Rcpp::export]]
+NumericMatrix p_ggum_all(const NumericMatrix & thetas,
+                         const NumericMatrix & params) {
+
+  // Arguments:
+  //  - thetas: a matrix of thetas across all people/dims
+  //  - params: a matrix of params for one item [alpha, delta, tau]
+  // Value:
+  //  - P(Z = 0 | thetas) across all dimensions
+
+  // declare number of persons/dimensions
+  int n_persons = thetas.nrow();
+  int n_dims    = params.nrow();
+  int n_param   = params.ncol();
+
+  // indicating return vector
+  NumericVector theta = no_init(n_persons);
+  NumericVector param = no_init(n_param);
+  NumericMatrix probs(Rf_allocMatrix(REALSXP, n_persons, n_dims));
+
+  // calculating probabilities across all dimensions
+  for(int dim = 0; dim < n_dims; dim++){
+    theta             = thetas.column(dim);
+    param             = params.row(dim);
+    probs.column(dim) = 1 - q_ggum(theta, param);
+  }
+
+  return probs;
+}
+
 NumericVector pder1_ggum(const SEXP & thetas,
                          const SEXP & params) {
 
@@ -139,7 +169,7 @@ NumericVector pder1_ggum(const SEXP & thetas,
     exp_1 = exp_ggum(theta, alpha, delta, tau, 1);
     exp_2 = exp_ggum(theta, alpha, delta, tau, 2);
     exp_3 = exp_ggum(theta, alpha, delta, tau, 3);
-    dprobs[p] = alpha * (exp_1 * (1 - 2 * exp_3) *
+    dprobs[p] = alpha * (exp_1 * (1 - 2 * exp_3) +
                          exp_2 * (2 - 1 * exp_3)) /
                 pow((1 + exp_1 + exp_2 + exp_3), 2);
   }
