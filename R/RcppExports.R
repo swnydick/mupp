@@ -32,18 +32,6 @@ find_all_permutations <- function(n, init = 0L) {
     .Call(`_mupp_find_all_permutations`, n, init)
 }
 
-q_ggum_all <- function(thetas, params) {
-    .Call(`_mupp_q_ggum_all`, thetas, params)
-}
-
-p_ggum_all <- function(thetas, params) {
-    .Call(`_mupp_p_ggum_all`, thetas, params)
-}
-
-pder1_ggum_all <- function(thetas, params) {
-    .Call(`_mupp_pder1_ggum_all`, thetas, params)
-}
-
 extract_permutations <- function(n, init = 0L) {
     .Call(`_mupp_extract_permutations`, n, init)
 }
@@ -62,5 +50,9 @@ pder1_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_orde
 
 loglik_mupp_rank_impl <- function(thetas, params, items, picked_orders) {
     .Call(`_mupp_loglik_mupp_rank_impl`, thetas, params, items, picked_orders)
+}
+
+lder1_mupp_rank_impl <- function(thetas, params, items, picked_orders) {
+    .Call(`_mupp_lder1_mupp_rank_impl`, thetas, params, items, picked_orders)
 }
 

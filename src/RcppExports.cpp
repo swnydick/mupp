@@ -38,42 +38,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// q_ggum_all
-NumericMatrix q_ggum_all(const NumericMatrix& thetas, const NumericMatrix& params);
-RcppExport SEXP _mupp_q_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(q_ggum_all(thetas, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// p_ggum_all
-NumericMatrix p_ggum_all(const NumericMatrix& thetas, const NumericMatrix& params);
-RcppExport SEXP _mupp_p_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(p_ggum_all(thetas, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// pder1_ggum_all
-NumericMatrix pder1_ggum_all(const NumericMatrix& thetas, const NumericMatrix& params);
-RcppExport SEXP _mupp_pder1_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
-    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(pder1_ggum_all(thetas, params));
-    return rcpp_result_gen;
-END_RCPP
-}
 // extract_permutations
 IntegerMatrix extract_permutations(int n, int init);
 RcppExport SEXP _mupp_extract_permutations(SEXP nSEXP, SEXP initSEXP) {
@@ -141,19 +105,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// lder1_mupp_rank_impl
+List lder1_mupp_rank_impl(NumericMatrix& thetas, const NumericMatrix& params, const IntegerMatrix& items, const IntegerMatrix& picked_orders);
+RcppExport SEXP _mupp_lder1_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP itemsSEXP, SEXP picked_ordersSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type items(itemsSEXP);
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type picked_orders(picked_ordersSEXP);
+    rcpp_result_gen = Rcpp::wrap(lder1_mupp_rank_impl(thetas, params, items, picked_orders));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mupp_start_profiler", (DL_FUNC) &_mupp_start_profiler, 1},
     {"_mupp_stop_profiler", (DL_FUNC) &_mupp_stop_profiler, 0},
     {"_mupp_find_all_permutations", (DL_FUNC) &_mupp_find_all_permutations, 2},
-    {"_mupp_q_ggum_all", (DL_FUNC) &_mupp_q_ggum_all, 2},
-    {"_mupp_p_ggum_all", (DL_FUNC) &_mupp_p_ggum_all, 2},
-    {"_mupp_pder1_ggum_all", (DL_FUNC) &_mupp_pder1_ggum_all, 2},
     {"_mupp_extract_permutations", (DL_FUNC) &_mupp_extract_permutations, 2},
     {"_mupp_pder1_mupp_rank1", (DL_FUNC) &_mupp_pder1_mupp_rank1, 3},
     {"_mupp_p_mupp_rank_impl", (DL_FUNC) &_mupp_p_mupp_rank_impl, 4},
     {"_mupp_pder1_mupp_rank_impl", (DL_FUNC) &_mupp_pder1_mupp_rank_impl, 4},
     {"_mupp_loglik_mupp_rank_impl", (DL_FUNC) &_mupp_loglik_mupp_rank_impl, 4},
+    {"_mupp_lder1_mupp_rank_impl", (DL_FUNC) &_mupp_lder1_mupp_rank_impl, 4},
     {NULL, NULL, 0}
 };
 

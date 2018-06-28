@@ -122,12 +122,14 @@ IntegerMatrix extract_permutations(int n,
   }
 }
 
-/* MUPP STUFF
+/* MUPP PROBABILITY STUFF
  *   - p_mupp_pick0     - numerator (individual component) of PICK probability
  *   - p_mupp_pick1     - OVERALL PICK probability
  *   - p_mupp_rank1     - OVERALL RANK probability
  *   - p_mupp_rank_impl - OVERALL RANK probability for an individual order OR
  *                        all possible order combinations
+ *   - pder1_mupp_rank_impl - DERIVATIVES for an individual order OR all possible
+ *                            combinations
  */
 
 NumericVector p_mupp_pick0(const NumericMatrix & Q,
@@ -282,10 +284,10 @@ NumericMatrix pder1_mupp_rank1(const NumericMatrix & P,
 
 }
 
-List initialize_mupp(const NumericMatrix & thetas,
-                     const NumericMatrix & params,
-                     IntegerVector dims            = NA_INTEGER,
-                     IntegerVector picked_order_id = NA_INTEGER) {
+List initialize_mupp_p(const NumericMatrix & thetas,
+                       const NumericMatrix & params,
+                       IntegerVector dims            = NA_INTEGER,
+                       IntegerVector picked_order_id = NA_INTEGER) {
 
   // declare number of items/params (1) AND whether to return ALL combinations
   int n_persons   = thetas.nrow();
@@ -378,7 +380,7 @@ NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
   //    (ONE permutation for each person)
 
   // initialize parameters and return stuff
-  List all_params  = initialize_mupp(thetas, params, dims, picked_order_id);
+  List all_params  = initialize_mupp_p(thetas, params, dims, picked_order_id);
 
   // pull out useful parameter parts
   int n_persons                   = all_params["n_persons"];
@@ -434,7 +436,7 @@ List pder1_mupp_rank_impl(NumericMatrix & thetas,
   //    dimension
 
   // initialize parameters and return stuff
-  List all_params  = initialize_mupp(thetas, params, dims, picked_order_id);
+  List all_params  = initialize_mupp_p(thetas, params, dims, picked_order_id);
 
   // pull out useful parameter parts
   int n_persons                   = all_params["n_persons"];
@@ -500,24 +502,15 @@ List pder1_mupp_rank_impl(NumericMatrix & thetas,
 }
 
 
-//[[Rcpp::export]]
-NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
-                                    const NumericMatrix & params,
-                                    const IntegerMatrix & items,
-                                    const IntegerMatrix & picked_orders){
+/* MUPP LIKELIHOOD STUFF
+ */
 
-  // Arguments:
-  //  - thetas: matrix of persons x dims (for all dims)
-  //  - params: matrix of dims x params (for all params, in order)
-  //  - items: matrix of [item, statement, dim] for all items, where
-  //           statement is integer indicating the statement number and aligns
-  //           with params
-  //  - picked_order_id: matrix if picked_order_id for [people x items]
+List initialize_mupp_l(const NumericMatrix & thetas,
+                       const NumericMatrix & params,
+                       const IntegerMatrix & items,
+                       const IntegerMatrix & picked_orders) {
 
-  // Value:
-  //  - matrix of loglikelihoods for mupp rank stuff ... (potentially aggregated)
-
-  // declare number of persons and dimensions of everything else
+ // declare number of persons and dimensions of everything else
   int n_persons    = thetas.nrow();
   int n_dims_all   = thetas.ncol();
   int n_statements = params.nrow();
@@ -569,6 +562,48 @@ NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
     stop("number of statements in item matrix must be between 1 and the number or rows of params");
   }
 
+  return List::create(
+    _["item_ids"]      = item_ids,
+    _["statement_ids"] = statement_ids,
+    _["dim_ids"]       = dim_ids,
+    _["unique_items"]  = unique_items,
+    _["n_items"]       = n_items,
+    _["n_persons"]     = n_persons,
+    _["n_dims"]        = n_dims_all,
+    _["n_rows_items"]  = n_rows_items,
+    _["n_cols_items"]  = n_cols_items
+  );
+}
+
+//[[Rcpp::export]]
+NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
+                                    const NumericMatrix & params,
+                                    const IntegerMatrix & items,
+                                    const IntegerMatrix & picked_orders){
+
+  // Arguments:
+  //  - thetas: matrix of persons x dims (for all dims)
+  //  - params: matrix of dims x params (for all params, in order)
+  //  - items: matrix of [item, statement, dim] for all items, where
+  //           statement is integer indicating the statement number and aligns
+  //           with params
+  //  - picked_orders: matrix of picked_order_id for [people x items]
+
+  // Value:
+  //  - matrix of loglikelihoods for mupp rank stuff ... (potentially aggregated)
+
+  // initialize parameters and return stuff
+  List all_params  = initialize_mupp_l(thetas, params, items, picked_orders);
+
+  // pull out useful parameter parts
+  int n_persons                   = all_params["n_persons"];
+  int n_items                     = all_params["n_items"];
+  int n_rows_items                = all_params["n_rows_items"];
+  IntegerVector unique_items      = all_params["unique_items"];
+  IntegerVector item_ids          = all_params["item_ids"];
+  IntegerVector statement_ids     = all_params["statement_ids"];
+  IntegerVector dim_ids           = all_params["dim_ids"];
+
   // indicate return matrix and temporary vectors
   NumericMatrix loglik(Rf_allocMatrix(REALSXP, n_persons, n_items));
   NumericVector p         = no_init(n_persons);
@@ -587,6 +622,68 @@ NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
 
   // calculating likelihood and putting it in matrix
     loglik.column(item) = log(p);
+  }
+
+  return loglik;
+}
+
+
+//[[Rcpp::export]]
+List lder1_mupp_rank_impl(NumericMatrix & thetas,
+                          const NumericMatrix & params,
+                          const IntegerMatrix & items,
+                          const IntegerMatrix & picked_orders){
+
+  // Arguments:
+  //  - thetas: matrix of persons x dims (for all dims)
+  //  - params: matrix of dims x params (for all params, in order)
+  //  - items: matrix of [item, statement, dim] for all items, where
+  //           statement is integer indicating the statement number and aligns
+  //           with params
+  //  - picked_orders: matrix of picked_order_id for [people x items]
+
+  // Value:
+  //  - matrix of loglikelihoods for mupp rank stuff ... (potentially aggregated)
+
+  // initialize parameters and return stuff
+  List all_params  = initialize_mupp_l(thetas, params, items, picked_orders);
+
+  // pull out useful parameter parts
+  int n_persons                   = all_params["n_persons"];
+  int n_items                     = all_params["n_items"];
+  int n_rows_items                = all_params["n_rows_items"];
+  IntegerVector unique_items      = all_params["unique_items"];
+  IntegerVector item_ids          = all_params["item_ids"];
+  IntegerVector statement_ids     = all_params["statement_ids"];
+  IntegerVector dim_ids           = all_params["dim_ids"];
+
+  // indicate return matrix and temporary vectors
+  List loglik;
+  NumericVector p         = no_init(n_persons);
+  NumericMatrix pder1(Rf_allocMatrix(REALSXP, n_persons, n_items));
+  LogicalVector item_flag = no_init(n_rows_items);
+
+  for(int item = 0; item < n_items; item++){
+
+    // pulling out statements and dimensions for this particular item
+    item_flag = (item_ids == unique_items[item]);
+
+    // extracting params/dimensions/picked_orders for each item
+    NumericMatrix item_par  = select_rows(params, statement_ids[item_flag]);
+    IntegerVector item_dims = dim_ids[item_flag];
+    IntegerVector item_resp = picked_orders.column(item);
+
+    // calculating probability/probability derivative for the chosen thing
+    p     = p_mupp_rank_impl(thetas, item_par, item_dims, item_resp).column(0);
+    pder1 = as<NumericMatrix>(pder1_mupp_rank_impl(thetas, item_par, item_dims, item_resp)[0]);
+
+    // updating pder1 so that columns are divided by p
+    for(int dim = 0; dim < item_dims.size(); dim++){
+      pder1.column(item_dims[dim] - 1) = pder1.column(item_dims[dim] - 1) / p;
+    }
+
+    //put derivative in list
+    loglik.push_back(pder1);
   }
 
   return loglik;

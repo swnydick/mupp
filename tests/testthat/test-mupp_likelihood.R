@@ -92,8 +92,8 @@ test_that("mupp likelihoods work", {
                                          params = cbind(alphas,
                                                         deltas,
                                                         taus),
-                                       items  = cbind(1, dims, dims),
-                                       picked_orders = rbind(order)),
+                                         items  = cbind(1, dims, dims),
+                                         picked_orders = rbind(order)),
                    matrix(log(1/factorial(n_dims)), nrow = 1, ncol = 1))
     } # END for order LOOP
   } # END for n_dims LOOP
