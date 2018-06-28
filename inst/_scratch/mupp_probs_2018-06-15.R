@@ -176,8 +176,8 @@ items <- all_resp$items
 
 out   <- estimate_mupp_params(resp       = resp,
                               items      = items,
-                              n_iters    = 30000,
-                              n_burnin   = 15000,
+                              n_iters    = 10000,
+                              n_burnin   = 2000,
                               delta_sign = sign(all_par$items$delta))
 
 

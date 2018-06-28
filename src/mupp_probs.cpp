@@ -74,36 +74,33 @@ void arrange_by_picked(NumericMatrix M,
                        bool reverse = false) {
 
   // declare number of rows/columns
-  int n_cols = M.ncol();
-  int n_rows = M.nrow();
+  int n_dims    = M.ncol();
+  int n_persons = M.nrow();
 
   // temporary vectors to store the matrices and picked order
-  NumericVector M_person     = no_init(n_cols);
-  IntegerVector picked_order = no_init(n_cols);
-  IntegerMatrix all_orders   = clone(orders);
+  NumericVector M_person     = no_init(n_dims);
+  IntegerMatrix all_orders   = transpose(orders);
 
   // indices to reverse the ordering (by row) if required)
   if(reverse){
-    for(int row = 0; row < all_orders.nrow(); row++){
-      IntegerVector row_order   = all_orders.row(row);
-      IntegerVector match_order = clone(row_order).sort();
-      all_orders.row(row)       = match(match_order, row_order) - 1;
+    for(int col = 0; col < all_orders.ncol(); col++){
+      IntegerVector col_order   = all_orders.column(col);
+      IntegerVector match_order = clone(col_order).sort();
+      all_orders.column(col)    = match(match_order, col_order) - 1;
     }
   }
 
   // for each person, rearrange M so that [1, 2, 3] is the PICKED order ...
-  for(int person = 0; person < n_rows; person++){
+  for(int person = 0; person < n_persons; person++){
 
-    // pull out appropriate order
-    picked_order  = all_orders.row(indices[person]);
+    // pull out appropriate row of matrix (required due to swapping)
+    M_person = M.row(person);
 
-    // rearrange row and assign to temporary vector
-    M_person      = M.row(person);
-
-    // put back in place of matrix
-    M.row(person) = as<NumericVector>(M_person[picked_order]);
+    // put the ordered element in the appropriate place in the matrix
+    for(int i = 0; i < n_dims; i++){
+      M[person + n_persons * i] = M_person[all_orders[i + n_dims * indices[person]]];
+    }
   }
-
 }
 
 // saved permutations (so we don't have to recreate this all of the time)
