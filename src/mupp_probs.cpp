@@ -418,10 +418,10 @@ NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
 
 
 // [[Rcpp::export]]
-List pder1_mupp_rank_impl(NumericMatrix & thetas,
-                          const NumericMatrix & params,
-                          IntegerVector dims            = NA_INTEGER,
-                          IntegerVector picked_order_id = NA_INTEGER) {
+ListOf<NumericMatrix> pder1_mupp_rank_impl(const NumericMatrix & thetas,
+                                           const NumericMatrix & params,
+                                           IntegerVector dims            = NA_INTEGER,
+                                           IntegerVector picked_order_id = NA_INTEGER) {
 
   // Arguments:
   //  - thetas: matrix of persons x dims (for all dims)
@@ -448,12 +448,12 @@ List pder1_mupp_rank_impl(NumericMatrix & thetas,
   IntegerMatrix picked_orders     = all_params["picked_orders"];
 
   // update thetas to be in the correct order and just those selected
-  thetas           = select_cols(thetas, dims_c);
+  NumericMatrix thetas_ordered    = select_cols(thetas, dims_c);
 
   // indicate temporary storage vectors
   int n_orders;
-  NumericMatrix P  = p_ggum_all(thetas, params);
-  NumericMatrix dP = pder1_ggum_all(thetas, params);
+  NumericMatrix P  = p_ggum_all(thetas_ordered, params);
+  NumericMatrix dP = pder1_ggum_all(thetas_ordered, params);
 
   // determine the number of orders AND the Q matrix
   //  - if we haven't specified selected order, we do this for EVERY ORDER
@@ -629,10 +629,10 @@ NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
 
 
 //[[Rcpp::export]]
-List lder1_mupp_rank_impl(NumericMatrix & thetas,
-                          const NumericMatrix & params,
-                          const IntegerMatrix & items,
-                          const IntegerMatrix & picked_orders){
+NumericMatrix lder1_mupp_rank_impl(const NumericMatrix & thetas,
+                                   const NumericMatrix & params,
+                                   const IntegerMatrix & items,
+                                   const IntegerMatrix & picked_orders){
 
   // Arguments:
   //  - thetas: matrix of persons x dims (for all dims)
@@ -651,6 +651,7 @@ List lder1_mupp_rank_impl(NumericMatrix & thetas,
   // pull out useful parameter parts
   int n_persons                   = all_params["n_persons"];
   int n_items                     = all_params["n_items"];
+  int n_dims                      = all_params["n_dims"];
   int n_rows_items                = all_params["n_rows_items"];
   IntegerVector unique_items      = all_params["unique_items"];
   IntegerVector item_ids          = all_params["item_ids"];
@@ -658,10 +659,11 @@ List lder1_mupp_rank_impl(NumericMatrix & thetas,
   IntegerVector dim_ids           = all_params["dim_ids"];
 
   // indicate return matrix and temporary vectors
-  List loglik;
+  NumericMatrix loglik(n_persons, n_dims);
   NumericVector p         = no_init(n_persons);
-  NumericMatrix pder1(Rf_allocMatrix(REALSXP, n_persons, n_items));
+  NumericMatrix pder1(Rf_allocMatrix(REALSXP, n_persons, n_dims));
   LogicalVector item_flag = no_init(n_rows_items);
+  int dim;
 
   for(int item = 0; item < n_items; item++){
 
@@ -675,15 +677,15 @@ List lder1_mupp_rank_impl(NumericMatrix & thetas,
 
     // calculating probability/probability derivative for the chosen thing
     p     = p_mupp_rank_impl(thetas, item_par, item_dims, item_resp).column(0);
-    pder1 = as<NumericMatrix>(pder1_mupp_rank_impl(thetas, item_par, item_dims, item_resp)[0]);
+    pder1 = pder1_mupp_rank_impl(thetas, item_par, item_dims, item_resp)[0];
 
     // updating pder1 so that columns are divided by p
-    for(int dim = 0; dim < item_dims.size(); dim++){
-      pder1.column(item_dims[dim] - 1) = pder1.column(item_dims[dim] - 1) / p;
+    for(int dim_id = 0; dim_id < item_dims.size(); dim_id++){
+      for(int person = 0; person < n_persons; person++){
+        dim                               = item_dims[dim_id] - 1;
+        loglik[person + dim * n_persons] += pder1[person + dim * n_persons] / p[person];
+      }
     }
-
-    //put derivative in list
-    loglik.push_back(pder1);
   }
 
   return loglik;
