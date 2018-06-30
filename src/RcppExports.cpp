@@ -38,6 +38,68 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// find_crossprod_column
+int find_crossprod_column(int dim1, int dim2, int n_dims, int init);
+RcppExport SEXP _mupp_find_crossprod_column(SEXP dim1SEXP, SEXP dim2SEXP, SEXP n_dimsSEXP, SEXP initSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type dim1(dim1SEXP);
+    Rcpp::traits::input_parameter< int >::type dim2(dim2SEXP);
+    Rcpp::traits::input_parameter< int >::type n_dims(n_dimsSEXP);
+    Rcpp::traits::input_parameter< int >::type init(initSEXP);
+    rcpp_result_gen = Rcpp::wrap(find_crossprod_column(dim1, dim2, n_dims, init));
+    return rcpp_result_gen;
+END_RCPP
+}
+// p_ggum_all
+NumericMatrix p_ggum_all(const NumericMatrix& thetas, const NumericMatrix& params);
+RcppExport SEXP _mupp_p_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(p_ggum_all(thetas, params));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pder1_ggum
+NumericVector pder1_ggum(const SEXP& thetas, const SEXP& params);
+RcppExport SEXP _mupp_pder1_ggum(SEXP thetasSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const SEXP& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const SEXP& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(pder1_ggum(thetas, params));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pder1_ggum_all
+NumericMatrix pder1_ggum_all(const NumericMatrix& thetas, const NumericMatrix& params);
+RcppExport SEXP _mupp_pder1_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(pder1_ggum_all(thetas, params));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pder2_ggum_all
+NumericMatrix pder2_ggum_all(const NumericMatrix& thetas, const NumericMatrix& params);
+RcppExport SEXP _mupp_pder2_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(pder2_ggum_all(thetas, params));
+    return rcpp_result_gen;
+END_RCPP
+}
 // extract_permutations
 IntegerMatrix extract_permutations(int n, int init);
 RcppExport SEXP _mupp_extract_permutations(SEXP nSEXP, SEXP initSEXP) {
@@ -63,6 +125,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pder2_mupp_rank1
+NumericMatrix pder2_mupp_rank1(const NumericMatrix& P, const NumericMatrix& dP, const NumericMatrix& d2P, const IntegerVector order);
+RcppExport SEXP _mupp_pder2_mupp_rank1(SEXP PSEXP, SEXP dPSEXP, SEXP d2PSEXP, SEXP orderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type P(PSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type dP(dPSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type d2P(d2PSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector >::type order(orderSEXP);
+    rcpp_result_gen = Rcpp::wrap(pder2_mupp_rank1(P, dP, d2P, order));
+    return rcpp_result_gen;
+END_RCPP
+}
 // p_mupp_rank_impl
 NumericMatrix p_mupp_rank_impl(const NumericMatrix& thetas, const NumericMatrix& params, IntegerVector dims, IntegerVector picked_order_id);
 RcppExport SEXP _mupp_p_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP dimsSEXP, SEXP picked_order_idSEXP) {
@@ -78,16 +154,30 @@ BEGIN_RCPP
 END_RCPP
 }
 // pder1_mupp_rank_impl
-List pder1_mupp_rank_impl(NumericMatrix& thetas, const NumericMatrix& params, IntegerVector dims, IntegerVector picked_order_id);
+ListOf<NumericMatrix> pder1_mupp_rank_impl(const NumericMatrix& thetas, const NumericMatrix& params, IntegerVector dims, IntegerVector picked_order_id);
 RcppExport SEXP _mupp_pder1_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP dimsSEXP, SEXP picked_order_idSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
     Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type picked_order_id(picked_order_idSEXP);
     rcpp_result_gen = Rcpp::wrap(pder1_mupp_rank_impl(thetas, params, dims, picked_order_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pder2_mupp_rank_impl
+ListOf<NumericMatrix> pder2_mupp_rank_impl(const NumericMatrix& thetas, const NumericMatrix& params, IntegerVector dims, IntegerVector picked_order_id);
+RcppExport SEXP _mupp_pder2_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP dimsSEXP, SEXP picked_order_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type picked_order_id(picked_order_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(pder2_mupp_rank_impl(thetas, params, dims, picked_order_id));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -106,12 +196,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // lder1_mupp_rank_impl
-List lder1_mupp_rank_impl(NumericMatrix& thetas, const NumericMatrix& params, const IntegerMatrix& items, const IntegerMatrix& picked_orders);
+NumericMatrix lder1_mupp_rank_impl(const NumericMatrix& thetas, const NumericMatrix& params, const IntegerMatrix& items, const IntegerMatrix& picked_orders);
 RcppExport SEXP _mupp_lder1_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP itemsSEXP, SEXP picked_ordersSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
     Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
     Rcpp::traits::input_parameter< const IntegerMatrix& >::type items(itemsSEXP);
     Rcpp::traits::input_parameter< const IntegerMatrix& >::type picked_orders(picked_ordersSEXP);
@@ -124,10 +214,17 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mupp_start_profiler", (DL_FUNC) &_mupp_start_profiler, 1},
     {"_mupp_stop_profiler", (DL_FUNC) &_mupp_stop_profiler, 0},
     {"_mupp_find_all_permutations", (DL_FUNC) &_mupp_find_all_permutations, 2},
+    {"_mupp_find_crossprod_column", (DL_FUNC) &_mupp_find_crossprod_column, 4},
+    {"_mupp_p_ggum_all", (DL_FUNC) &_mupp_p_ggum_all, 2},
+    {"_mupp_pder1_ggum", (DL_FUNC) &_mupp_pder1_ggum, 2},
+    {"_mupp_pder1_ggum_all", (DL_FUNC) &_mupp_pder1_ggum_all, 2},
+    {"_mupp_pder2_ggum_all", (DL_FUNC) &_mupp_pder2_ggum_all, 2},
     {"_mupp_extract_permutations", (DL_FUNC) &_mupp_extract_permutations, 2},
     {"_mupp_pder1_mupp_rank1", (DL_FUNC) &_mupp_pder1_mupp_rank1, 3},
+    {"_mupp_pder2_mupp_rank1", (DL_FUNC) &_mupp_pder2_mupp_rank1, 4},
     {"_mupp_p_mupp_rank_impl", (DL_FUNC) &_mupp_p_mupp_rank_impl, 4},
     {"_mupp_pder1_mupp_rank_impl", (DL_FUNC) &_mupp_pder1_mupp_rank_impl, 4},
+    {"_mupp_pder2_mupp_rank_impl", (DL_FUNC) &_mupp_pder2_mupp_rank_impl, 4},
     {"_mupp_loglik_mupp_rank_impl", (DL_FUNC) &_mupp_loglik_mupp_rank_impl, 4},
     {"_mupp_lder1_mupp_rank_impl", (DL_FUNC) &_mupp_lder1_mupp_rank_impl, 4},
     {NULL, NULL, 0}

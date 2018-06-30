@@ -18,6 +18,8 @@ using namespace Rcpp;
 /* HELPER FUNCTIONS
  *   - select_cols (select non-proximate columns)
  *   - select_rows (select non-proximate rows)
+ *   - arrange_by_picked
+ *   - find_crossprod_column
  *   - extract_permutations
  */
 
@@ -29,18 +31,25 @@ NumericMatrix select_cols(const NumericMatrix & X,
   //  - ind: an integer vector of columns to select
 
   // capturing constants
-  int out_cols = ind.size();
-  int out_rows = X.nrow();
+  int out_cols = ind.size(),
+      out_rows = X.nrow(),
+      inp_cols = X.ncol();
 
-  NumericMatrix Y(Rf_allocMatrix(REALSXP, out_rows, out_cols));
+  // - if all ind is equal to the number of columns of X, return X
+  // - otherwise, re-arrange
+  if(is_true(all(ind == seq_len(inp_cols)))){
+    return X;
+  } else{
+    NumericMatrix Y(Rf_allocMatrix(REALSXP, out_rows, out_cols));
 
-  for(int j = 0; j < out_cols; j++){
-    for(int i = 0; i < out_rows; i++){
-      Y[i + j * out_rows] = X[i + ind[j] * out_rows];
+    for(int j = 0; j < out_cols; j++){
+      for(int i = 0; i < out_rows; i++){
+        Y[i + j * out_rows] = X[i + ind[j] * out_rows];
+      }
     }
-  }
 
-  return Y;
+    return Y;
+  }
 }
 
 NumericMatrix select_rows(const NumericMatrix & X,
@@ -51,19 +60,25 @@ NumericMatrix select_rows(const NumericMatrix & X,
   //  - ind: an integer vector of rows to select
 
   // capturing constants
-  int out_rows = ind.size();
-  int out_cols = X.ncol();
-  int inp_rows = X.nrow();
+  int out_rows = ind.size(),
+      out_cols = X.ncol(),
+      inp_rows = X.nrow();
 
-  NumericMatrix Y(Rf_allocMatrix(REALSXP, out_rows, out_cols));
+  // - if all ind is equal to the number of columns of X, return X
+  // - otherwise, re-arrange
+  if(is_true(all(ind == seq_len(inp_rows)))){
+    return X;
+  } else{
+    NumericMatrix Y(Rf_allocMatrix(REALSXP, out_rows, out_cols));
 
-  for(int j = 0; j < out_cols; j++){
-    for(int i = 0; i < out_rows; i++){
-      Y[i + j * out_rows] = X[ind[i] + j * inp_rows];
+    for(int j = 0; j < out_cols; j++){
+      for(int i = 0; i < out_rows; i++){
+        Y[i + j * out_rows] = X[ind[i] + j * inp_rows];
+      }
     }
-  }
 
-  return Y;
+    return Y;
+  }
 }
 
 
@@ -74,16 +89,17 @@ void arrange_by_picked(NumericMatrix M,
                        bool reverse = false) {
 
   // declare number of rows/columns
-  int n_dims    = M.ncol();
-  int n_persons = M.nrow();
+  int n_dims    = M.ncol(),
+      n_persons = M.nrow(),
+      n_orders  = orders.ncol();
 
   // temporary vectors to store the matrices and picked order
-  NumericVector M_person     = no_init(n_dims);
-  IntegerMatrix all_orders   = transpose(orders);
+  NumericVector M_person   = no_init(n_dims);
+  IntegerMatrix all_orders = transpose(orders);
 
   // indices to reverse the ordering (by row) if required)
   if(reverse){
-    for(int col = 0; col < all_orders.ncol(); col++){
+    for(int col = 0; col < n_orders; col++){
       IntegerVector col_order   = all_orders.column(col);
       IntegerVector match_order = clone(col_order).sort();
       all_orders.column(col)    = match(match_order, col_order) - 1;
@@ -97,8 +113,8 @@ void arrange_by_picked(NumericMatrix M,
     M_person = M.row(person);
 
     // put the ordered element in the appropriate place in the matrix
-    for(int i = 0; i < n_dims; i++){
-      M[person + n_persons * i] = M_person[all_orders[i + n_dims * indices[person]]];
+    for(int i = 0; i < n_orders; i++){
+      M[person + n_persons * i] = M_person[all_orders[i + n_orders * indices[person]]];
     }
   }
 }
@@ -142,8 +158,8 @@ NumericVector p_mupp_pick0(const NumericMatrix & Q,
   //  - P(Z_s = 1 | thetas) individual element where s is the selected option
 
   // declare number of persons/dimensions
-  int n_persons = Q.nrow();
-  int n_dims    = Q.ncol();
+  int n_persons = Q.nrow(),
+      n_dims    = Q.ncol();
 
   // vectors to store stuff
   NumericVector probs(n_persons, 1.0);
@@ -170,13 +186,13 @@ NumericVector p_mupp_pick1(const NumericMatrix & Q,
   //  - P(Z_s = 1 | thetas) OVERALL where s is the selected option
 
   // declare number of persons/dimensions
-  int n_persons = Q.nrow();
-  int n_dims    = Q.ncol();
+  int n_persons = Q.nrow(),
+      n_dims    = Q.ncol();
 
   // vectors to store stuff
-  NumericVector numer(n_persons, 0.0);
-  NumericVector denom(n_persons, 0.0);
-  NumericVector p = no_init(n_persons);
+  NumericVector numer(n_persons, 0.0),
+                denom(n_persons, 0.0),
+                p = no_init(n_persons);
 
   // calculating probability across picked dimension
   for(int dim = 0; dim < n_dims; dim++){
@@ -205,8 +221,8 @@ NumericVector p_mupp_rank1(const NumericMatrix & Q,
   //  - P(Z_s = 1 | thetas) where s is the selected option
 
   // declare number of persons/dimensions
-  int n_persons = Q.nrow();
-  int n_dims    = order.size();
+  int n_persons = Q.nrow(),
+      n_dims    = order.size();
 
   // matrices to store stuff
   NumericMatrix Q_order = select_cols(Q, order);
@@ -241,9 +257,9 @@ NumericMatrix pder1_mupp_rank1(const NumericMatrix & P,
   //                                          --> dP/dt2 = d(AB) * C, ...
 
   // declare number of persons/dimensions
-  int n_persons  = P.nrow();
-  int n_dims_all = P.ncol();
-  int n_dims     = order.size();
+  int n_persons  = P.nrow(),
+      n_dims_all = P.ncol(),
+      n_dims     = order.size();
 
   // argument checks
   if(n_persons != dP.nrow()){
@@ -259,15 +275,15 @@ NumericMatrix pder1_mupp_rank1(const NumericMatrix & P,
   }
 
   // indicating matrices to store things
-  NumericMatrix P_o  = select_cols(P, order);
-  NumericMatrix dP_o = select_cols(dP, order);
+  NumericMatrix P_o  = select_cols(P, order),
+                dP_o = select_cols(dP, order);
   int dim, alt, out;
 
   // indicating return matrix
   NumericMatrix dprobs(Rf_allocMatrix(REALSXP, n_persons, n_dims));
 
   // fixing probabilities/derivatives for NOT chosen categories
-  P_o.column(1)  = 1 - P_o.column(1);
+  P_o.column(1)  = -P_o.column(1) + 1;
   dP_o.column(1) = -dP_o.column(1);
 
   // denominator of the model
@@ -281,7 +297,89 @@ NumericMatrix pder1_mupp_rank1(const NumericMatrix & P,
   }
 
   return dprobs;
+}
 
+// [[Rcpp::export]]
+NumericMatrix pder2_mupp_rank1(const NumericMatrix & P,
+                               const NumericMatrix & dP,
+                               const NumericMatrix & d2P,
+                               const IntegerVector order){
+
+  // Arguments:
+  //  - P:     a matrix of probability of selecting each option
+  //  - dP:    derivative of the probability matrix (same dimensions as P)
+  //  - d2P:   second derivative of the probability matrix (same dimensions as P)
+  //  - order: the order of the output
+  // Value:
+  //  - P''(Z_s = 1 | thetas) for s and t and st
+  //    (generalize to more than two dimensions?)
+
+  // declare number of persons/dimensions
+  int n_persons  = P.nrow(),
+      n_dims_all = P.ncol(),
+      n_dims     = order.size(),
+      n_pairs    = (n_dims * (n_dims - 1)) / 2;
+
+  // argument checks
+  if(n_persons != dP.nrow()){
+    stop("P and dP do not have the same number of rows");
+  }
+
+  if(n_dims_all != dP.ncol()){
+    stop("P and dP do not have the same number of columns");
+  }
+
+  if(n_dims != 2){
+    stop("pder2_mupp_rank1 only provides derivatives for 2 dimensions, so far");
+  }
+
+  // indicating matrices to store things
+  NumericMatrix P_o   = select_cols(P,   order),
+                dP_o  = select_cols(dP,  order),
+                d2P_o = select_cols(d2P, order);
+  NumericVector p_1   = no_init(n_persons),
+                p_2   = no_init(n_persons),
+                dp_1  = no_init(n_persons),
+                dp_2  = no_init(n_persons),
+                d2p_1 = no_init(n_persons);
+  int dim, alt, out;
+
+  // indicating return matrix
+  NumericMatrix dprobs(Rf_allocMatrix(REALSXP, n_persons, n_dims + n_pairs));
+
+  // fixing probabilities/derivatives for NOT chosen categories
+  P_o.column(1)   = -P_o.column(1) + 1;
+  dP_o.column(1)  = -dP_o.column(1);
+  d2P_o.column(1) = -d2P_o.column(1);
+
+  // denominator of the model
+  NumericVector denom  = P_o.column(0) * P_o.column(1) + (1 - P_o.column(0)) * (1 - P_o.column(1));
+  NumericVector denom3 = pow(denom, 3);
+
+  // set dprobs to appropriate column of derivative matrix
+  for(dim = 0; dim < n_dims; dim++){
+
+    // determining dimensions
+    alt   = n_dims - dim - 1;
+    out   = order[dim];
+
+    // assigning parts
+    p_1   = P_o.column(dim);  p_2  = P_o.column(alt);
+    dp_1  = dP_o.column(dim); dp_2 = dP_o.column(alt);
+    d2p_1 = d2P_o.column(dim);
+
+    // calculating (second derivative)
+    dprobs.column(out) = (p_2 * (1 - p_2)) *
+                         (d2p_1 * denom - 2 * pow(dp_1, 2) * (2 * p_2 - 1)) /
+                         denom3;
+
+    // calculating (cross derivative in third column)
+    if(dim == 1){
+      dprobs.column(dim + 1) = dp_1 * dp_2 * (1 - p_1 - p_2) / denom3;
+    }
+  }
+
+  return dprobs;
 }
 
 List initialize_mupp_p(const NumericMatrix & thetas,
@@ -290,10 +388,10 @@ List initialize_mupp_p(const NumericMatrix & thetas,
                        IntegerVector picked_order_id = NA_INTEGER) {
 
   // declare number of items/params (1) AND whether to return ALL combinations
-  int n_persons   = thetas.nrow();
-  int n_dims_all  = thetas.ncol();
-  int n_params    = params.nrow();
-  bool all_combs  = true;
+  int n_persons  = thetas.nrow(),
+      n_dims_all = thetas.ncol(),
+      n_params   = params.nrow();
+  bool all_combs = true;
 
   // forcing dims and picked order ID to have positive length
   if(dims.size() == 0){
@@ -317,8 +415,8 @@ List initialize_mupp_p(const NumericMatrix & thetas,
   }
 
   // R -> C Conversion (subtract 1)
-  IntegerVector dims_c            = dims - 1;
-  IntegerVector picked_order_id_c = picked_order_id - 1;
+  IntegerVector dims_c            = dims - 1,
+                picked_order_id_c = picked_order_id - 1;
 
   // declare number of items/params (2)
   int n_dims_item = dims_c.size();
@@ -385,8 +483,8 @@ NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
   // pull out useful parameter parts
   int n_persons                   = all_params["n_persons"];
   bool all_combs                  = all_params["all_combs"];
-  IntegerVector dims_c            = all_params["dims"];
-  IntegerVector picked_order_id_c = all_params["picked_order_id"];
+  IntegerVector dims_c            = all_params["dims"],
+                picked_order_id_c = all_params["picked_order_id"];
   IntegerMatrix picked_orders     = all_params["picked_orders"];
 
   // indicate temporary storage vectors
@@ -416,7 +514,6 @@ NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
   return probs;
 }
 
-
 // [[Rcpp::export]]
 ListOf<NumericMatrix> pder1_mupp_rank_impl(const NumericMatrix & thetas,
                                            const NumericMatrix & params,
@@ -439,12 +536,12 @@ ListOf<NumericMatrix> pder1_mupp_rank_impl(const NumericMatrix & thetas,
   List all_params  = initialize_mupp_p(thetas, params, dims, picked_order_id);
 
   // pull out useful parameter parts
-  int n_persons                   = all_params["n_persons"];
-  int n_dims_all                  = all_params["n_dims_all"];
-  int n_dims_item                 = all_params["n_dims_item"];
+  int n_persons                   = all_params["n_persons"],
+      n_dims_all                  = all_params["n_dims_all"],
+      n_dims_item                 = all_params["n_dims_item"];
   bool all_combs                  = all_params["all_combs"];
-  IntegerVector dims_c            = all_params["dims"];
-  IntegerVector picked_order_id_c = all_params["picked_order_id"];
+  IntegerVector dims_c            = all_params["dims"],
+                picked_order_id_c = all_params["picked_order_id"];
   IntegerMatrix picked_orders     = all_params["picked_orders"];
 
   // update thetas to be in the correct order and just those selected
@@ -452,8 +549,8 @@ ListOf<NumericMatrix> pder1_mupp_rank_impl(const NumericMatrix & thetas,
 
   // indicate temporary storage vectors
   int n_orders;
-  NumericMatrix P  = p_ggum_all(thetas_ordered, params);
-  NumericMatrix dP = pder1_ggum_all(thetas_ordered, params);
+  NumericMatrix P  = p_ggum_all(thetas_ordered, params),
+                dP = pder1_ggum_all(thetas_ordered, params);
 
   // determine the number of orders AND the Q matrix
   //  - if we haven't specified selected order, we do this for EVERY ORDER
@@ -477,8 +574,8 @@ ListOf<NumericMatrix> pder1_mupp_rank_impl(const NumericMatrix & thetas,
   for(int perm = 0; perm < n_orders; perm++){
 
     // initialize probability matrix to 0 and calculate probabilities
-    NumericMatrix dprobs(n_persons, n_dims_all);
-    NumericMatrix dprobs_ = pder1_mupp_rank1(P, dP, picked_orders.row(perm));
+    NumericMatrix dprobs(n_persons, n_dims_all),
+                  dprobs_ = pder1_mupp_rank1(P, dP, picked_orders.row(perm));
 
     // reverse ordering to get back to appropriate order (given dims)
     if(!all_combs){
@@ -488,9 +585,115 @@ ListOf<NumericMatrix> pder1_mupp_rank_impl(const NumericMatrix & thetas,
                         true);
     }
 
-    // add probabilities to appropriate column of matrix (combining same dims)
+    // add deriv to appropriate column of matrix (combining same dims)
     for(int dim = 0; dim < n_dims_item; dim++){
       dprobs.column(dims_c[dim]) = dprobs.column(dims_c[dim]) + dprobs_.column(dim);
+    }
+
+    // assign back to list
+    dprobs_all.push_back(dprobs);
+
+  }
+
+  return dprobs_all;
+}
+
+// [[Rcpp::export]]
+ListOf<NumericMatrix> pder2_mupp_rank_impl(const NumericMatrix & thetas,
+                                           const NumericMatrix & params,
+                                           IntegerVector dims            = NA_INTEGER,
+                                           IntegerVector picked_order_id = NA_INTEGER) {
+
+  // Arguments:
+  //  - thetas: matrix of persons x dims (for all dims)
+  //  - params: matrix of dims x params (for single item dims)
+  //  - dims:   vector of dims of the items
+  //  - picked_order_id: index of picked order for each person
+  //                     (if NA, return ALL orders)
+  //
+  // Value:
+  //  - list of P''(s > t > ...)(theta_s, theta_t, theta_ ...) ds, where the list
+  //    elements correspond to the choice, the column corresponds to the
+  //    dimension, and the remaining columns corresponds to the cross-dimension
+
+  // initialize parameters and return stuff
+  List all_params  = initialize_mupp_p(thetas, params, dims, picked_order_id);
+
+  // pull out useful parameter parts
+  int n_persons                   = all_params["n_persons"],
+      n_dims_all                  = all_params["n_dims_all"],
+      n_dims_item                 = all_params["n_dims_item"];
+  bool all_combs                  = all_params["all_combs"];
+  IntegerVector dims_c            = all_params["dims"],
+                picked_order_id_c = all_params["picked_order_id"];
+  IntegerMatrix picked_orders     = all_params["picked_orders"];
+
+  // update thetas to be in the correct order and just those selected
+  NumericMatrix thetas_ordered    = select_cols(thetas, dims_c);
+
+  // number of pairs (off-diagonal)
+  int n_pairs = n_dims_all * (n_dims_all - 1) / 2;
+  int cross_col;
+
+  // NOTE: // * // indicates things that need to be updated if ranking more than 2
+
+  // indicate temporary storage vectors
+  int n_orders;
+  NumericMatrix P   = p_ggum_all(thetas_ordered, params),
+                dP  = pder1_ggum_all(thetas_ordered, params),
+                d2P = pder2_ggum_all(thetas_ordered, params);
+
+  // determine the number of orders AND the Q matrix
+  //  - if we haven't specified selected order, we do this for EVERY ORDER
+  //  - otherwise, we do this JUST for the selected order
+  if(all_combs){
+    n_orders = picked_orders.nrow();
+  } else{
+    n_orders = 1;
+    arrange_by_picked(P,
+                      picked_order_id_c,
+                      picked_orders);
+    arrange_by_picked(dP,
+                      picked_order_id_c,
+                      picked_orders);
+    arrange_by_picked(d2P,
+                      picked_order_id_c,
+                      picked_orders);
+  }
+
+  // indicate return list
+  List dprobs_all;
+
+  // add all probabilities to return matrix
+  for(int perm = 0; perm < n_orders; perm++){
+
+    // initialize probability matrix to 0 and calculate probabilities
+    NumericMatrix dprobs(n_persons, n_dims_all + n_pairs),
+                  dprobs_ = pder2_mupp_rank1(P, dP, d2P, picked_orders.row(perm));
+
+    // * // reverse ordering to get back to appropriate order (given dims)
+    if(!all_combs){
+      arrange_by_picked(dprobs_,
+                        picked_order_id_c,
+                        picked_orders,
+                        true);
+    }
+
+    // add second deriv to appropriate column of matrix (combining same dims)
+    for(int dim = 0; dim < n_dims_item; dim++){
+      dprobs.column(dims_c[dim]) = dprobs.column(dims_c[dim]) + dprobs_.column(dim);
+    }
+
+    // * // add cross derivative of probability
+    if(dims_c[0] != dims_c[1]){
+
+      // column to put the cross product in
+      cross_col = find_crossprod_column(dims_c[0],
+                                        dims_c[1],
+                                        n_dims_all);
+
+      // add cross-deriv in appropriate column of matrix
+      dprobs.column(cross_col) = dprobs_.column(2);
     }
 
     // assign back to list
@@ -511,15 +714,15 @@ List initialize_mupp_l(const NumericMatrix & thetas,
                        const IntegerMatrix & picked_orders) {
 
  // declare number of persons and dimensions of everything else
-  int n_persons    = thetas.nrow();
-  int n_dims_all   = thetas.ncol();
-  int n_statements = params.nrow();
-  int n_params     = params.ncol();
-  int n_rows_items = items.nrow();
-  int n_cols_items = items.ncol();
+  int n_persons    = thetas.nrow(),
+      n_dims_all   = thetas.ncol(),
+      n_statements = params.nrow(),
+      n_params     = params.ncol(),
+      n_rows_items = items.nrow(),
+      n_cols_items = items.ncol();
 
-  int n_rows_resp  = picked_orders.nrow();
-  int n_cols_resp  = picked_orders.ncol();
+  int n_rows_resp  = picked_orders.nrow(),
+      n_cols_resp  = picked_orders.ncol();
 
   // Argument Checks (1)
 
@@ -539,10 +742,10 @@ List initialize_mupp_l(const NumericMatrix & thetas,
   }
 
   // declare items
-  IntegerVector item_ids      = items.column(0);
-  IntegerVector statement_ids = items.column(1) - 1;
-  IntegerVector dim_ids       = items.column(2);
-  IntegerVector unique_items  = sort_unique(item_ids);
+  IntegerVector item_ids      = items.column(0),
+                statement_ids = items.column(1) - 1,
+                dim_ids       = items.column(2),
+                unique_items  = sort_unique(item_ids);
   int n_items = unique_items.size();
 
   // Argument Checks (2)
@@ -596,13 +799,13 @@ NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
   List all_params  = initialize_mupp_l(thetas, params, items, picked_orders);
 
   // pull out useful parameter parts
-  int n_persons                   = all_params["n_persons"];
-  int n_items                     = all_params["n_items"];
-  int n_rows_items                = all_params["n_rows_items"];
-  IntegerVector unique_items      = all_params["unique_items"];
-  IntegerVector item_ids          = all_params["item_ids"];
-  IntegerVector statement_ids     = all_params["statement_ids"];
-  IntegerVector dim_ids           = all_params["dim_ids"];
+  int n_persons                   = all_params["n_persons"],
+      n_items                     = all_params["n_items"],
+      n_rows_items                = all_params["n_rows_items"];
+  IntegerVector unique_items      = all_params["unique_items"],
+                item_ids          = all_params["item_ids"],
+                statement_ids     = all_params["statement_ids"],
+                dim_ids           = all_params["dim_ids"];
 
   // indicate return matrix and temporary vectors
   NumericMatrix loglik(Rf_allocMatrix(REALSXP, n_persons, n_items));
@@ -649,19 +852,19 @@ NumericMatrix lder1_mupp_rank_impl(const NumericMatrix & thetas,
   List all_params  = initialize_mupp_l(thetas, params, items, picked_orders);
 
   // pull out useful parameter parts
-  int n_persons                   = all_params["n_persons"];
-  int n_items                     = all_params["n_items"];
-  int n_dims                      = all_params["n_dims"];
-  int n_rows_items                = all_params["n_rows_items"];
-  IntegerVector unique_items      = all_params["unique_items"];
-  IntegerVector item_ids          = all_params["item_ids"];
-  IntegerVector statement_ids     = all_params["statement_ids"];
-  IntegerVector dim_ids           = all_params["dim_ids"];
+  int n_persons                   = all_params["n_persons"],
+      n_items                     = all_params["n_items"],
+      n_dims                      = all_params["n_dims"],
+      n_rows_items                = all_params["n_rows_items"];
+  IntegerVector unique_items      = all_params["unique_items"],
+                item_ids          = all_params["item_ids"],
+                statement_ids     = all_params["statement_ids"],
+                dim_ids           = all_params["dim_ids"];
 
   // indicate return matrix and temporary vectors
-  NumericMatrix loglik(n_persons, n_dims);
   NumericVector p         = no_init(n_persons);
-  NumericMatrix pder1(Rf_allocMatrix(REALSXP, n_persons, n_dims));
+  NumericMatrix pder1(Rf_allocMatrix(REALSXP, n_persons, n_dims)),
+                loglik(n_persons, n_dims);
   LogicalVector item_flag = no_init(n_rows_items);
   int dim;
 
@@ -672,8 +875,8 @@ NumericMatrix lder1_mupp_rank_impl(const NumericMatrix & thetas,
 
     // extracting params/dimensions/picked_orders for each item
     NumericMatrix item_par  = select_rows(params, statement_ids[item_flag]);
-    IntegerVector item_dims = dim_ids[item_flag];
-    IntegerVector item_resp = picked_orders.column(item);
+    IntegerVector item_dims = dim_ids[item_flag],
+                  item_resp = picked_orders.column(item);
 
     // calculating probability/probability derivative for the chosen thing
     p     = p_mupp_rank_impl(thetas, item_par, item_dims, item_resp).column(0);

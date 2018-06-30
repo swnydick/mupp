@@ -32,6 +32,52 @@ find_all_permutations <- function(n, init = 0L) {
     .Call(`_mupp_find_all_permutations`, n, init)
 }
 
+#' Find Column for Cross-Product
+#'
+#' Given two dimension and the total number of dimensions, find the column
+#' indexing the appropriate cross-product.
+#'
+#' @param dim1 the first dimension
+#' @param dim2 the second dimension
+#' @param n_dims the total number of dimensions
+#' @param init an integer indicating the initial starting value for the set
+#'        of integers included in the permutation. See Details.
+#'
+#' @return The index of the cross-product column.
+#'
+#' @details \code{init} is useful for indexing C vs R code. If \code{init = 0},
+#'          then the indices will work with 0 indexed languages, such as C or
+#'          Python. If \code{init = 1}, then the indices will work with 1 indexed
+#'          languages, such as R.
+#'
+#'          This function assumes that the first n_dims columns are the dims,
+#'          the next n_dims - 1 columns are the cross-products of dimension 1 with
+#'          the remaining dims, the next n_dims - 2 columns are the cross-products
+#'          of dimension 2 with the remaining dims > 2, etc.
+#'
+#' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
+#'
+#' @export
+find_crossprod_column <- function(dim1, dim2, n_dims, init = 0L) {
+    .Call(`_mupp_find_crossprod_column`, dim1, dim2, n_dims, init)
+}
+
+p_ggum_all <- function(thetas, params) {
+    .Call(`_mupp_p_ggum_all`, thetas, params)
+}
+
+pder1_ggum <- function(thetas, params) {
+    .Call(`_mupp_pder1_ggum`, thetas, params)
+}
+
+pder1_ggum_all <- function(thetas, params) {
+    .Call(`_mupp_pder1_ggum_all`, thetas, params)
+}
+
+pder2_ggum_all <- function(thetas, params) {
+    .Call(`_mupp_pder2_ggum_all`, thetas, params)
+}
+
 extract_permutations <- function(n, init = 0L) {
     .Call(`_mupp_extract_permutations`, n, init)
 }
@@ -40,12 +86,20 @@ pder1_mupp_rank1 <- function(P, dP, order) {
     .Call(`_mupp_pder1_mupp_rank1`, P, dP, order)
 }
 
+pder2_mupp_rank1 <- function(P, dP, d2P, order) {
+    .Call(`_mupp_pder2_mupp_rank1`, P, dP, d2P, order)
+}
+
 p_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id = NA_integer_) {
     .Call(`_mupp_p_mupp_rank_impl`, thetas, params, dims, picked_order_id)
 }
 
 pder1_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id = NA_integer_) {
     .Call(`_mupp_pder1_mupp_rank_impl`, thetas, params, dims, picked_order_id)
+}
+
+pder2_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id = NA_integer_) {
+    .Call(`_mupp_pder2_mupp_rank_impl`, thetas, params, dims, picked_order_id)
 }
 
 loglik_mupp_rank_impl <- function(thetas, params, items, picked_orders) {
