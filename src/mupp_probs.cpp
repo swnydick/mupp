@@ -633,7 +633,7 @@ ListOf<NumericMatrix> pder2_mupp_rank_impl(const NumericMatrix & thetas,
 
   // number of pairs (off-diagonal)
   int n_pairs = n_dims_all * (n_dims_all - 1) / 2;
-  int cross_col;
+  int dim1, dim2, cross_col, cross_mult;
 
   // NOTE: // * // indicates things that need to be updated if ranking more than 2
 
@@ -685,16 +685,22 @@ ListOf<NumericMatrix> pder2_mupp_rank_impl(const NumericMatrix & thetas,
     }
 
     // * // add cross derivative of probability
-    if(dims_c[0] != dims_c[1]){
+    dim1 = dims_c[0];
+    dim2 = dims_c[1];
 
-      // column to put the cross product in
-      cross_col = find_crossprod_column(dims_c[0],
-                                        dims_c[1],
-                                        n_dims_all);
-
-      // add cross-deriv in appropriate column of matrix
-      dprobs.column(cross_col) = dprobs_.column(2);
+    // if dim1 and dim2 are the same,  then everything (both off diags) go into the elt
+    // if dim1 and dim2 are different, then we include one of the off-diags
+    if(dim1 == dim2){
+      cross_mult = 2;
+    } else{
+      cross_mult = 1;
     }
+
+    // column to put the cross product in
+    cross_col = find_crossprod_column(dim1, dim2, n_dims_all);
+
+    // add cross-deriv in appropriate column of matrix
+    dprobs.column(cross_col) = dprobs.column(cross_col) + cross_mult * dprobs_.column(2);
 
     // assign back to list
     dprobs_all.push_back(dprobs);
