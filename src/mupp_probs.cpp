@@ -633,7 +633,7 @@ ListOf<NumericMatrix> pder2_mupp_rank_impl(const NumericMatrix & thetas,
 
   // number of pairs (off-diagonal)
   int n_pairs = n_dims_all * (n_dims_all - 1) / 2;
-  int dim1, dim2, cross_col, cross_mult;
+  int dim, dim1, dim2, dim12, cross_mult;
 
   // NOTE: // * // indicates things that need to be updated if ranking more than 2
 
@@ -672,6 +672,7 @@ ListOf<NumericMatrix> pder2_mupp_rank_impl(const NumericMatrix & thetas,
                   dprobs_ = pder2_mupp_rank1(P, dP, d2P, picked_orders.row(perm));
 
     // * // reverse ordering to get back to appropriate order (given dims)
+    //      (need to reverse-order cross-products)
     if(!all_combs){
       arrange_by_picked(dprobs_,
                         picked_order_id_c,
@@ -680,31 +681,40 @@ ListOf<NumericMatrix> pder2_mupp_rank_impl(const NumericMatrix & thetas,
     }
 
     // add second deriv to appropriate column of matrix (combining same dims)
-    for(int dim = 0; dim < n_dims_item; dim++){
-      dprobs.column(dims_c[dim]) = dprobs.column(dims_c[dim]) + dprobs_.column(dim);
+    for(dim = 0; dim < n_dims_item; dim++){
+      dim1 = dims_c[dim];
+      dprobs.column(dim1) = dprobs.column(dim1) + dprobs_.column(dim);
     }
 
-    // * // add cross derivative of probability
-    dim1 = dims_c[0];
-    dim2 = dims_c[1];
+    // add cross-derivative of probability
+    for(int d1 = 0; d1 < n_dims_item - 1; d1++){
+      for(int d2 = 1; d2 < n_dims_item; d2++){
 
-    // if dim1 and dim2 are the same,  then everything (both off diags) go into the elt
-    // if dim1 and dim2 are different, then we include one of the off-diags
-    if(dim1 == dim2){
-      cross_mult = 2;
-    } else{
-      cross_mult = 1;
+        // add 1 to dim (start at cross-prod elements)
+        dim += 1;
+
+        // add cross-derivative of probability
+        dim1 = dims_c[d1];
+        dim2 = dims_c[d2];
+
+        // dim1 =  dim2, everything (both off diags) goes into elt
+        // dim1 != dim2, include one of the off-diags
+        if(dim1 == dim2){
+          cross_mult = 2;
+        } else{
+          cross_mult = 1;
+        }
+
+        // column to put the cross product in
+        dim12 = find_crossprod_column(dim1, dim2, n_dims_all);
+
+        // add cross-deriv in appropriate column of matrix
+        dprobs.column(dim12) = dprobs.column(dim12) + cross_mult * dprobs_.column(2);
+
+        // assign back to list
+        dprobs_all.push_back(dprobs);
+      }
     }
-
-    // column to put the cross product in
-    cross_col = find_crossprod_column(dim1, dim2, n_dims_all);
-
-    // add cross-deriv in appropriate column of matrix
-    dprobs.column(cross_col) = dprobs.column(cross_col) + cross_mult * dprobs_.column(2);
-
-    // assign back to list
-    dprobs_all.push_back(dprobs);
-
   }
 
   return dprobs_all;
@@ -719,7 +729,7 @@ List initialize_mupp_l(const NumericMatrix & thetas,
                        const IntegerMatrix & items,
                        const IntegerMatrix & picked_orders) {
 
- // declare number of persons and dimensions of everything else
+  // declare number of persons and dimensions of everything else
   int n_persons    = thetas.nrow(),
       n_dims_all   = thetas.ncol(),
       n_statements = params.nrow(),
