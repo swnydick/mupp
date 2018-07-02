@@ -865,7 +865,7 @@ NumericMatrix lder2_mupp_rank_impl(const NumericMatrix & thetas,
     // extracting params/dimensions/picked_orders for each item
     NumericMatrix item_par  = select_rows(params, statement_ids[item_flag]);
     IntegerVector item_dims = dim_ids[item_flag],
-                  prev_dims(n_dims, -1),
+                  prev_dims(n_dims + n_pairs, -1),
                   item_resp = picked_orders.column(item);
 
     // calculating probability/probability derivative/second derivatives for the chosen thing

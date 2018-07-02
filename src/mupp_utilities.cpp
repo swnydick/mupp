@@ -12,11 +12,12 @@ NumericMatrix select_cols(const NumericMatrix & X,
   int out_cols = ind.size(),
       out_rows = X.nrow(),
       inp_cols = X.ncol();
+  IntegerVector inp_compare = seq_len(inp_cols) - 1;
 
   // - if all ind is equal to the number of columns of X, return X
   // - otherwise, re-arrange
-  if(is_true(all(ind == seq_len(inp_cols)))){
-    return X;
+  if((out_cols == inp_compare.size()) & is_true(all(ind == inp_compare))){
+    return clone(X);
   } else{
     NumericMatrix Y(Rf_allocMatrix(REALSXP, out_rows, out_cols));
 
@@ -41,11 +42,12 @@ NumericMatrix select_rows(const NumericMatrix & X,
   int out_rows = ind.size(),
       out_cols = X.ncol(),
       inp_rows = X.nrow();
+  IntegerVector inp_compare = seq_len(inp_rows) - 1;
 
   // - if all ind is equal to the number of columns of X, return X
   // - otherwise, re-arrange
-  if(is_true(all(ind == seq_len(inp_rows)))){
-    return X;
+  if((out_rows == inp_compare.size()) & is_true(all(ind == inp_compare))){
+    return clone(X);
   } else{
     NumericMatrix Y(Rf_allocMatrix(REALSXP, out_rows, out_cols));
 
