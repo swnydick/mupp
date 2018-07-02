@@ -5,6 +5,9 @@
 #' @param n_persons integer indicating the number of persons
 #' @param n_items integer indicating the number of items
 #' @param n_dims integer > 2 indicating the total number of dimensions
+#' @param max_item_dims integer indicating the maximum dimensions on any item
+#' @param unidim_items boolian indicating whether an item can load on only a
+#'        single dimension or must load on multiple dimensions
 #'
 #' @return a list with items/persons that conform to the MUPP model, as expected
 #'         in package functions
@@ -18,15 +21,29 @@
 #' @importFrom kfhelperfuns arrange_by_vars
 #' @importFrom magrittr "%>%" set_rownames
 #' @export
-simulate_mupp_params <- function(n_persons = 1,
-                                 n_items   = 1,
-                                 n_dims    = 2){
+simulate_mupp_params <- function(n_persons     = 1,
+                                 n_items       = 1,
+                                 n_dims        = 2,
+                                 max_item_dims = NULL,
+                                 unidim_items  = FALSE){
 
   # argument checks #
   n_persons  <- check_numeric(n_persons)
   n_items    <- check_numeric(n_items)
   n_dims     <- check_numeric(n_dims,
                               min_number = 2)
+
+  # determining the maximum items on a dimension
+  if(!length(max_item_dims)){
+    max_item_dims <- n_dims
+  } # END if STATEMENT
+
+  # indicating whether an item can load on only a single dimension
+  if(max_item_dims == 1){
+    unidim_items <- TRUE
+  } else{
+    unidim_items <- as.logical(unidim_items)[1]
+  }
 
   ## persons ##
 
@@ -53,7 +70,7 @@ simulate_mupp_params <- function(n_persons = 1,
   # (uses ggum)
 
   # the dims across all items
-  dims         <- seq_len(n_dims)
+  dims         <- seq_len(min(max_item_dims, n_dims))
 
   # number of dims each item loads on
   # (sample.int used in case dims is length 1 to prevent switching methods)
@@ -68,9 +85,9 @@ simulate_mupp_params <- function(n_persons = 1,
                            item_dims  <- items_n_dims[i]
                            data.frame(item      = i,
                                       statement = NA,
-                                      dim       = sort(sample(x       = dims,
+                                      dim       = sort(sample(x       = seq_len(n_dims),
                                                               size    = item_dims,
-                                                              replace = FALSE)))
+                                                              replace = unidim_items)))
                          }) %>%
                   do.call(what = rbind)
   items        <- transform(items,

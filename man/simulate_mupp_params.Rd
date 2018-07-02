@@ -4,7 +4,8 @@
 \alias{simulate_mupp_params}
 \title{Simulate MUPP Parameters}
 \usage{
-simulate_mupp_params(n_persons = 1, n_items = 1, n_dims = 2)
+simulate_mupp_params(n_persons = 1, n_items = 1, n_dims = 2,
+  max_item_dims = NULL, unidim_items = FALSE)
 }
 \arguments{
 \item{n_persons}{integer indicating the number of persons}
@@ -12,6 +13,11 @@ simulate_mupp_params(n_persons = 1, n_items = 1, n_dims = 2)
 \item{n_items}{integer indicating the number of items}
 
 \item{n_dims}{integer > 2 indicating the total number of dimensions}
+
+\item{max_item_dims}{integer indicating the maximum dimensions on any item}
+
+\item{unidim_items}{boolian indicating whether an item can load on only a
+single dimension or must load on multiple dimensions}
 }
 \value{
 a list with items/persons that conform to the MUPP model, as expected
