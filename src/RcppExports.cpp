@@ -52,6 +52,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// find_crossprod_dims
+NumericVector find_crossprod_dims(int dim12, int n_dims, int init);
+RcppExport SEXP _mupp_find_crossprod_dims(SEXP dim12SEXP, SEXP n_dimsSEXP, SEXP initSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type dim12(dim12SEXP);
+    Rcpp::traits::input_parameter< int >::type n_dims(n_dimsSEXP);
+    Rcpp::traits::input_parameter< int >::type init(initSEXP);
+    rcpp_result_gen = Rcpp::wrap(find_crossprod_dims(dim12, n_dims, init));
+    return rcpp_result_gen;
+END_RCPP
+}
 // p_ggum_all
 NumericMatrix p_ggum_all(const NumericMatrix& thetas, const NumericMatrix& params);
 RcppExport SEXP _mupp_p_ggum_all(SEXP thetasSEXP, SEXP paramsSEXP) {
@@ -209,12 +222,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// lder2_mupp_rank_impl
+NumericMatrix lder2_mupp_rank_impl(const NumericMatrix& thetas, const NumericMatrix& params, const IntegerMatrix& items, const IntegerMatrix& picked_orders);
+RcppExport SEXP _mupp_lder2_mupp_rank_impl(SEXP thetasSEXP, SEXP paramsSEXP, SEXP itemsSEXP, SEXP picked_ordersSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type thetas(thetasSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type params(paramsSEXP);
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type items(itemsSEXP);
+    Rcpp::traits::input_parameter< const IntegerMatrix& >::type picked_orders(picked_ordersSEXP);
+    rcpp_result_gen = Rcpp::wrap(lder2_mupp_rank_impl(thetas, params, items, picked_orders));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mupp_start_profiler", (DL_FUNC) &_mupp_start_profiler, 1},
     {"_mupp_stop_profiler", (DL_FUNC) &_mupp_stop_profiler, 0},
     {"_mupp_find_all_permutations", (DL_FUNC) &_mupp_find_all_permutations, 2},
     {"_mupp_find_crossprod_column", (DL_FUNC) &_mupp_find_crossprod_column, 4},
+    {"_mupp_find_crossprod_dims", (DL_FUNC) &_mupp_find_crossprod_dims, 3},
     {"_mupp_p_ggum_all", (DL_FUNC) &_mupp_p_ggum_all, 2},
     {"_mupp_pder1_ggum", (DL_FUNC) &_mupp_pder1_ggum, 2},
     {"_mupp_pder1_ggum_all", (DL_FUNC) &_mupp_pder1_ggum_all, 2},
@@ -227,6 +255,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mupp_pder2_mupp_rank_impl", (DL_FUNC) &_mupp_pder2_mupp_rank_impl, 4},
     {"_mupp_loglik_mupp_rank_impl", (DL_FUNC) &_mupp_loglik_mupp_rank_impl, 4},
     {"_mupp_lder1_mupp_rank_impl", (DL_FUNC) &_mupp_lder1_mupp_rank_impl, 4},
+    {"_mupp_lder2_mupp_rank_impl", (DL_FUNC) &_mupp_lder2_mupp_rank_impl, 4},
     {NULL, NULL, 0}
 };
 

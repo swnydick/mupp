@@ -80,6 +80,8 @@ IntegerMatrix find_all_permutations(int n,
 //'          the remaining dims, the next n_dims - 2 columns are the cross-products
 //'          of dimension 2 with the remaining dims > 2, etc.
 //'
+//' @seealso \code{\link{find_crossprod_dims}}
+//'
 //' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
 //'
 //' @export
@@ -100,7 +102,7 @@ int find_crossprod_column(int dim1,
 
   // argument checks //
   if(n_dims <= std::max(dim1, dim2)){
-    stop("n_dim is not at least the number of dimensions in dim1_col OR dim2_col");
+    stop("n_dim is not at least the number of dimensions in dim1 OR dim2");
   }
 
   // fixing arguments:
@@ -127,4 +129,79 @@ int find_crossprod_column(int dim1,
   }
 
   return dim12 + init;
+}
+
+
+//' Find Dimensions given Cross-Product Column
+//'
+//' Given the column indexing the appropriate cross-product and the total number
+//' of dimensions, find the two dimensions leading to the cross-product.
+//'
+//' @param dim12 the column of the matrix or data.frame
+//' @param n_dims the total number of dimensions
+//' @param init an integer indicating the initial starting value for the set
+//'        of integers included in the permutation. See Details.
+//'
+//' @return A vector/array indicating the cross-product dimensions.
+//'
+//' @details \code{init} is useful for indexing C vs R code. If \code{init = 0},
+//'          then the indices will work with 0 indexed languages, such as C or
+//'          Python. If \code{init = 1}, then the indices will work with 1 indexed
+//'          languages, such as R.
+//'
+//'          This function assumes that the first n_dims columns are the dims,
+//'          the next n_dims - 1 columns are the cross-products of dimension 1 with
+//'          the remaining dims, the next n_dims - 2 columns are the cross-products
+//'          of dimension 2 with the remaining dims > 2, etc.
+//' @seealso \code{\link{find_crossprod_column}}
+//'
+//' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
+//'
+//' @export
+// [[Rcpp::export]]
+NumericVector find_crossprod_dims(int dim12,
+                                  int n_dims,
+                                  int init = 0) {
+
+  // integer to store dimension columns
+  int dim1, dim2;
+  dim12 -= init;
+
+  // first  n_dim columns are dim1, dim2, ...
+  // second n_dim - 1 columns are dim12, dim13, dim14, ...
+  // third  n_dim - 1 columns are dim23, dim24, ...
+
+  // fixing arguments:
+  //  - if dim12 < 0, bad!
+  //  - if dim12 < n_dims, return the element of the diagonal
+  if(dim12 < 0){
+    stop("dim12 must greater than init");
+  } else if(dim12 < n_dims){
+    dim1 = dim12;
+    dim2 = dim12;
+  } else{
+
+    // first, subtract the diagonal
+    dim12 -= n_dims;
+
+    // then subtract the dimension from dim12 until we go below 0
+    for(dim1 = 0; dim1 < n_dims; dim1++){
+      dim12 -= n_dims - dim1 - 1;
+
+      if(dim12 < 0){
+        break;
+      }
+    }
+
+    // add the remainder
+    dim2 = n_dims + dim12;
+  }
+
+  // argument checks //
+  if(n_dims <= dim2){
+    stop("n_dim is not at least the number of dimensions in dim1_col OR dim2_col");
+  }
+
+  return NumericVector::create(dim1 + init,
+                               dim2 + init);
 }
