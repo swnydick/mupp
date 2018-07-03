@@ -106,7 +106,6 @@ NumericMatrix q_ggum_all(const NumericMatrix & thetas,
   return probs;
 }
 
-// [[Rcpp::export]]
 NumericMatrix p_ggum_all(const NumericMatrix & thetas,
                          const NumericMatrix & params) {
 
@@ -160,7 +159,6 @@ double pder1_denom_ggum(double exp_1,
   return denom;
 }
 
-// [[Rcpp::export]]
 NumericVector pder1_ggum(const SEXP & thetas,
                          const SEXP & params) {
 
@@ -207,7 +205,6 @@ NumericVector pder1_ggum(const SEXP & thetas,
   return dprobs;
 }
 
-// [[Rcpp::export]]
 NumericMatrix pder1_ggum_all(const NumericMatrix & thetas,
                              const NumericMatrix & params) {
 
@@ -296,7 +293,6 @@ NumericVector pder2_ggum(const SEXP & thetas,
   return dprobs;
 }
 
-// [[Rcpp::export]]
 NumericMatrix pder2_ggum_all(const NumericMatrix & thetas,
                              const NumericMatrix & params) {
 

@@ -24,7 +24,6 @@ List saved_permutations = List::create(find_all_permutations(1),
                                        find_all_permutations(6));
 
 // extract save permutation (if we have it stored)
-// [[Rcpp::export]]
 IntegerMatrix extract_permutations(int n,
                                    int init = 0){
   if(n < saved_permutations.size() & init == 0){
@@ -134,7 +133,6 @@ NumericVector p_mupp_rank1(const NumericMatrix & Q,
   return probs;
 }
 
-// [[Rcpp::export]]
 NumericMatrix pder1_mupp_rank1(const NumericMatrix & P,
                                const NumericMatrix & dP,
                                const IntegerVector order){
@@ -195,7 +193,6 @@ NumericMatrix pder1_mupp_rank1(const NumericMatrix & P,
   return dprobs;
 }
 
-// [[Rcpp::export]]
 NumericMatrix pder2_mupp_rank1(const NumericMatrix & P,
                                const NumericMatrix & dP,
                                const NumericMatrix & d2P,
@@ -735,7 +732,7 @@ NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
                                  dim_ids[item_flag],
                                  picked_orders.column(item)).column(0);
 
-  // calculating likelihood and putting it in matrix
+    // calculating likelihood and adding elements to output matrix
     loglik.column(item) = log(p);
   }
 
