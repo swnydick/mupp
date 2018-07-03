@@ -8,10 +8,10 @@ simulate_mupp_resp(persons, items)
 }
 \arguments{
 \item{persons}{persons data.frame with column names
-(person, dim, theta)}
+[person, dim, theta]}
 
 \item{items}{items data.frame with column names
-(item, statement, dim, alpha, delta, tau)}
+[item, statement, dim, alpha, delta, tau]}
 }
 \value{
 a data.frame of [person x item x response pattern]
