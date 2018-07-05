@@ -736,20 +736,22 @@ NumericMatrix loglik_mupp_rank_impl(const NumericMatrix & thetas,
   NumericMatrix loglik(Rf_allocMatrix(REALSXP, n_persons, n_items));
   NumericVector p         = no_init(n_persons);
   LogicalVector item_flag = no_init(n_rows_items);
+  IntegerVector item_resp = no_init(n_persons);
 
   for(int item = 0; item < n_items; item++){
 
     // pulling out statements and dimensions for this particular item
     item_flag = (item_ids == unique_items[item]);
+    item_resp = picked_orders.column(item);
 
     // calculating probability (all thetas, relevant params/dims, item orders)
     p         = p_mupp_rank_impl(thetas,
                                  select_rows(params, statement_ids[item_flag]),
                                  dim_ids[item_flag],
-                                 picked_orders.column(item)).column(0);
+                                 item_resp).column(0);
 
-    // calculating likelihood and adding elements to output matrix
-    loglik.column(item) = log(p);
+    // calculating likelihood and adding elements to output matrix (fixing NAs)
+    loglik.column(item) = ifelse(is_na(item_resp), NA_REAL, log(p));
   }
 
   return loglik;
@@ -819,9 +821,11 @@ NumericMatrix lder1_mupp_rank_impl(const NumericMatrix & thetas,
       }
 
 
-      // adding elements to output matrix
+      // adding elements to output matrix (ignoring elements if NA)
       for(int person = 0; person < n_persons; person++){
-        loglik[person + dim * n_persons] += pder1[person + dim * n_persons] / p[person];
+        if(item_resp[person] != NA_INTEGER){
+          loglik[person + dim * n_persons] += pder1[person + dim * n_persons] / p[person];
+        }
       }
     }
   }
@@ -904,14 +908,19 @@ NumericMatrix lder2_mupp_rank_impl(const NumericMatrix & thetas,
         // determining/adding elements to output matrix
         for(int person = 0; person < n_persons; person++){
 
-          // pulling out p, dp1, dp2, dp12 for current combination
-          // (dp12 is cross-derivative/second derivative)
-          p1   = p[person];
-          dp1  = pder1[person + dim1  * n_persons];
-          dp2  = pder1[person + dim2  * n_persons];
-          dp12 = pder2[person + dim12 * n_persons];
+          // adding elements to output matrix (ignoring elements if NA)
+          if(item_resp[person] != NA_INTEGER){
 
-          loglik[person + dim12 * n_persons] += (p1 * dp12 - dp1 * dp2) / pow(p1, 2);
+            // pulling out p, dp1, dp2, dp12 for current combination
+            // (dp12 is cross-derivative/second derivative)
+            p1   = p[person];
+            dp1  = pder1[person + dim1  * n_persons];
+            dp2  = pder1[person + dim2  * n_persons];
+            dp12 = pder2[person + dim12 * n_persons];
+
+            // adding elements to output matrix (ignoring elements if NA)
+            loglik[person + dim12 * n_persons] += (p1 * dp12 - dp1 * dp2) / pow(p1, 2);
+          }
         }
       }
     }

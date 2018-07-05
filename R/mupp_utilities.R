@@ -22,10 +22,12 @@ loglik_mupp_rank_with_prior1 <- function(thetas,
                                          items,
                                          prior_mean,
                                          prior_sd){
-  -1 * sum(loglik_mupp_rank_impl(thetas = rbind(thetas),
-                                 params = params,
-                                 items  = items,
-                                 picked_orders = resp))
+  loglik_mupp_rank_impl(thetas = rbind(thetas),
+                        params = params,
+                        items  = items,
+                        picked_orders = resp) %>%
+  sum(na.rm = TRUE) %>%
+  multiply_by(-1)
 } # END loglik_mupp_rank_with_prior FUNCTION
 
 # calculate lder1 (-1 for minimization) for one person

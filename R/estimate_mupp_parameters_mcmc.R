@@ -137,8 +137,9 @@ update_mupp_thetas_mcmc <- function(mcmc_envir){
                                      args = arguments))
 
   # calcualate loglik AND logprior for persons
-  logliks_pers <- lapply(X   = logliks,
-                         FUN = rowSums)
+  logliks_pers <- lapply(X     = logliks,
+                         FUN   = rowSums,
+                         na.rm = TRUE)
   priors_pers  <- lapply(X   = list(old = thetas_old,
                                     new = thetas_new),
                          FUN = function(mat){
@@ -192,8 +193,9 @@ update_mupp_params_mcmc <- function(mcmc_envir,
                                       args = arguments))
 
   # calcualate loglik AND logprior for persons
-  logliks_item <- lapply(X   = logliks,
-                         FUN = colSums)
+  logliks_item <- lapply(X     = logliks,
+                         FUN   = colSums,
+                         na.rm = TRUE)
   priors_item  <- lapply(X   = list(old = params_old,
                                     new = params_new),
                          FUN = function(vec){
