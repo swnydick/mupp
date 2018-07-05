@@ -5,23 +5,20 @@
 #'
 #' @param resp a data.frame of (at least) [person, item, resp]
 #' @param items a data.frame of (at least) [item, statement, dim, alpha, delta, tau]
-#' @param method the estimation method ("newton_r", "bfgs_r", "newton_c", "bfgs_c",
-#'        "MCMC")
+#' @param method the estimation method ("bfgs", "MCMC")
 #' @param ... other parameters to pass to the method
 #'
-#' @return a list of [thetas, sems, hessians]
+#' @return a list of [thetas, vars, hessians]
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
 #'
 #' @importFrom kfhelperfuns arrange_by_vars "%ni%"
-#' @importFrom magrittr "%>%" "%<>%" set_rownames
+#' @importFrom magrittr "%>%" "%<>%" set_rownames multiply_by
 #' @importFrom data.table dcast as.data.table
 #' @export
 estimate_mupp_thetas <- function(resp,
                                  items,
-                                 method  = c("newton_r", "bfgs_r",
-                                             "newton_c", "bfgs_c",
-                                             "MCMC"),
+                                 method  = c("bfgs", "MCMC"),
                                  control = list(),
                                  ...){
 
@@ -80,19 +77,93 @@ estimate_mupp_thetas <- function(resp,
 
   # run algorithm
   algorithm_fun <- switch(method,
-                          newton_r = estimate_mupp_thetas_newton_r,
+                          bfgs  = estimate_mupp_thetas_,
+                          MCMC  = ,
                           stop(method, " method not implemented at this time."))
 
   out           <- algorithm_fun(resp    = resp_adj,
                                  params  = params_adj,
                                  items   = items_adj,
+                                 method  = method,
                                  control = control,
                                  ...)
 
   # calculate SEM and return
 
-  # Note: most of this is similar to estimate_mupp_params ... maybe combine similar parts?
-
   return(out)
 
 } # END estimate_mupp_thetas FUNCTION
+
+
+estimate_mupp_thetas_ <- function(resp,
+                                  params,
+                                  items,
+                                  method  = "bfgs",
+                                  control = list(),
+                                  ...){
+
+
+  # converting everything to a matrix (to work in C++ algorithm)
+  resp   <- as.matrix(resp)
+  params <- as.matrix(params)
+  items  <- as.matrix(items)
+
+  # indicate basic things
+  n_persons <- nrow(resp)
+  n_dims    <- max(items[ , 3])
+
+  # create matrix of thetas based on maximum dimension
+  out       <- vector(mode   = "list",
+                      length = n_persons)
+
+  # update control
+  control_default <- list(prior_mean = 0,
+                          prior_sd   = 1,
+                          eps        = 1e-07,
+                          max_iters  = 100)
+  control         <- modifyList(control_default,
+                                control)
+
+  # update algorithm
+  estimation_fun   <- switch(method,
+                             bfgs = estimate_mupp_thetas_bfgs,
+                             stop(method, " method not implemented at this time."))
+
+  # estimating for each person
+  for(person in seq_len(n_persons)){
+
+    # updating arguments
+    args          <- c(list(resp   = resp[person, , drop = FALSE],
+                            params = params,
+                            items  = items,
+                            n_dims = n_dims),
+                       control)
+
+    # estimating theta
+    out[[person]] <- do.call(what = estimation_fun,
+                             args = args)
+  } # END for person LOOP
+
+  # update thetas to be everything in out bounded together
+  thetas   <- lapply(out, "[[", "thetas") %>%
+              do.call(what = rbind)
+  hessians <- lapply(out, "[[", "hessian") %>%
+              lapply(FUN = c) %>%
+              do.call(what = rbind)
+
+  # determine actual variances
+  vars     <- lapply(seq_len(nrow(thetas)),
+                     FUN = function(i){
+                       H <- lder2_mupp_rank_with_prior1(thetas = thetas[i, ],
+                                                        resp   = rbind(resp[i, ]),
+                                                        params = params,
+                                                        items  = items)
+                       c(solve(H))
+                     }) %>%
+              do.call(what = rbind)
+
+  return(list(thetas   = thetas,
+              vars     = vars,
+              hessians = hessians))
+
+} # END estimate_mupp_thetas_ FUNCTION

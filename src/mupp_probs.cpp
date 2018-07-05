@@ -68,6 +68,14 @@ NumericVector p_mupp_pick0(const NumericMatrix & Q,
     }
   }
 
+  // protection for really rare events
+  LogicalVector flags = probs == 0 | probs == 1;
+
+  if(is_true(any(flags))){
+    probs[probs == 0] = 0 + 1e-09;
+    probs[probs == 1] = 1 - 1e-09;
+  }
+
   return probs;
 }
 
@@ -128,6 +136,14 @@ NumericVector p_mupp_rank1(const NumericMatrix & Q,
   // calculating probability of being in particular order (1 by 1)
   for(int dim = 0; dim < n_dims - 1; dim++){
     probs = probs * p_mupp_pick1(Q_order(_, Range(dim, n_dims - 1)), 0);
+  }
+
+  // protection for really rare events
+  LogicalVector flags = probs == 0 | probs == 1;
+
+  if(is_true(any(flags))){
+    probs[probs == 0] = 0 + 1e-09;
+    probs[probs == 1] = 1 - 1e-09;
   }
 
   return probs;
@@ -801,6 +817,7 @@ NumericMatrix lder1_mupp_rank_impl(const NumericMatrix & thetas,
       } else{
         prev_dims[dim_id] = dim;
       }
+
 
       // adding elements to output matrix
       for(int person = 0; person < n_persons; person++){

@@ -4,21 +4,20 @@
 \alias{estimate_mupp_thetas}
 \title{Estimate MUPP Thetas}
 \usage{
-estimate_mupp_thetas(resp, items, method = c("newton_r", "bfgs_r", "newton_c",
-  "bfgs_c", "MCMC"), control = list(), ...)
+estimate_mupp_thetas(resp, items, method = c("bfgs", "MCMC"),
+  control = list(), ...)
 }
 \arguments{
 \item{resp}{a data.frame of (at least) [person, item, resp]}
 
 \item{items}{a data.frame of (at least) [item, statement, dim, alpha, delta, tau]}
 
-\item{method}{the estimation method ("newton_r", "bfgs_r", "newton_c", "bfgs_c",
-"MCMC")}
+\item{method}{the estimation method ("bfgs", "MCMC")}
 
 \item{...}{other parameters to pass to the method}
 }
 \value{
-a list of [thetas, sems, hessians]
+a list of [thetas, vars, hessians]
 }
 \description{
 Estimate MUPP person parameters given item responses, item parameters, and

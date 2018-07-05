@@ -3,9 +3,9 @@
 rm(list = ls())
 
 # specifying parameters
-params <- simulate_mupp_params(n_persons = 1,
-                               n_items   = 100,
-                               n_dims    = 5,
+params <- simulate_mupp_params(n_persons = 10,
+                               n_items   = 300,
+                               n_dims    = 7,
                                max_item_dims = 2,
                                unidim_items  = TRUE)
 resp   <- do.call(simulate_mupp_resp,
@@ -18,6 +18,6 @@ thetas <- tidyr::spread(params$persons,
 resp        <- resp$resp
 items       <- params$items
 
-est_thetas  <- estimate_mupp_thetas(resp, items)
+est_thetas  <- estimate_mupp_thetas(resp, items, "bfgs")
 
-cor(thetas, est_thetas$thetas)
+cor(thetas, est_thetas$ests)
