@@ -49,5 +49,6 @@ estimate_mupp_thetas_bfgs <- function(...,
   }
 
   return(list(thetas  = thetas_new,
-              hessian = B))
+              hessian = B,
+              iters   = i))
 } # END estimate_mupp_thetas_bfgs FUNCTION

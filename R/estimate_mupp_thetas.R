@@ -8,7 +8,7 @@
 #' @param method the estimation method ("bfgs", "MCMC")
 #' @param ... other parameters to pass to the method
 #'
-#' @return a list of [thetas, vars, hessians]
+#' @return a list of [thetas, vars, hessians, iters]
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
 #'
@@ -150,6 +150,7 @@ estimate_mupp_thetas_ <- function(resp,
   hessians <- lapply(out, "[[", "hessian") %>%
               lapply(FUN = c) %>%
               do.call(what = rbind)
+  iters    <- sapply(out, "[[", "iters")
 
   # determine actual variances
   vars     <- lapply(seq_len(nrow(thetas)),
@@ -164,6 +165,7 @@ estimate_mupp_thetas_ <- function(resp,
 
   return(list(thetas   = thetas,
               vars     = vars,
-              hessians = hessians))
+              hessians = hessians,
+              iters    = iters))
 
 } # END estimate_mupp_thetas_ FUNCTION

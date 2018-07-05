@@ -17,7 +17,7 @@ estimate_mupp_thetas(resp, items, method = c("bfgs", "MCMC"),
 \item{...}{other parameters to pass to the method}
 }
 \value{
-a list of [thetas, vars, hessians]
+a list of [thetas, vars, hessians, iters]
 }
 \description{
 Estimate MUPP person parameters given item responses, item parameters, and
