@@ -20,4 +20,4 @@ items       <- params$items
 
 est_thetas  <- estimate_mupp_thetas(resp, items, "bfgs")
 
-cor(thetas, est_thetas$ests)
+diag(cor(thetas, est_thetas$thetas))
