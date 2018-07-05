@@ -64,11 +64,13 @@ wolfe_line_search <- function(fun,
                               ...){
 
   is_not_wolfe_f <- function(alpha){
-    c(fun(x + alpha * p, ...) > fx + c1 * alpha * fx_dir)
+    check <- c(fun(x + alpha * p, ...) > fx + c1 * alpha * fx_dir)
+    is.na(check) || check
   } # END is_not_wolfe_f FUNCTION
 
   is_not_wolfe_d <- function(alpha){
-    sum(p * dfun(x + alpha * p, ...)) < c2 * fx_dir
+    check <- sum(p * dfun(x + alpha * p, ...)) < c2 * fx_dir
+    is.na(check) || check
   } # END is_not_wolfe_d FUNCTION
 
   # initialize parameter values

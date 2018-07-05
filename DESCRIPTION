@@ -2,16 +2,22 @@ Package: mupp
 Version: 0.0.0.9000
 Title: Multi-Unidimensional Pairwise Preference (MUPP) IRT Model
 Description: Probability functions to describe the MUPP model, simulate responses to the MUPP model, and estimate parameters of the MUPP model.
-Authors@R: c(person("Steven", "Nydick", email = "steven.nydick@kornferry.com", role = c("aut", "cre")), person("Jeff", "Jones", email = "jeff.jones@kornferry.com", role = c("aut")))
-Depends: R (>= 3.4.0)
+Authors@R: c(person("Steven", "Nydick", email = "steven.nydick@kornferry.com", role = c("aut", "cre")))
+Depends:
+  R (>= 3.4.0)
 LinkingTo:
   Rcpp (>= 0.12.16)
 Imports:
-  Rcpp (>= 0.12.16)
+  Rcpp (>= 0.12.16),
+  magrittr,
+  data.table,
+  lhs
+Suggests: 
+  testthat,
+  numDeriv,
+  tidyr
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
 RoxygenNote: 6.0.1
-Suggests: 
-    testthat

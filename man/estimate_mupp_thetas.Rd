@@ -14,14 +14,74 @@ estimate_mupp_thetas(resp, items, method = c("bfgs", "MCMC"),
 
 \item{method}{the estimation method ("bfgs", "MCMC")}
 
+\item{control}{a list of parameters to control the algorithm. See details.}
+
 \item{...}{other parameters to pass to the method}
 }
 \value{
-a list of [thetas, vars, hessians, iters]
+a list of [thetas, vars, hessians, logliks, iters]
 }
 \description{
 Estimate MUPP person parameters given item responses, item parameters, and
 item properties.
+}
+\details{
+Method BFGS uses a modified BFGS algorithm, based on Li and Fukushima (2001),
+         which includes modifications of the BFGS estimated hessian with demonstrated
+         global convergence properties.
+
+\itemize{
+  \item{For BFGS, control parameters include
+
+    \describe{
+      \item{eps}{convergence criterion, will converge if
+                 length of gradient is shorter than this value. Defaults
+                 to 1e-07.}
+      \item{max_iters}{maximum number of iterations before convergence. Defaults
+                       to 100.}
+      \item{starts}{number of random starts at different theta vectors (using
+                    latin hypercube samples. Defaults to 4.)}
+    }
+  }
+}
+}
+\examples{
+set.seed(23523)
+
+# simulate parameters and responses to the model
+# (assumption is that params/resp will follow conventions)
+params <- simulate_mupp_params(n_persons     = 10,
+                               n_items       = 300,
+                               n_dims        = 9,
+                               max_item_dims = 2,
+                               unidim_items  = TRUE)
+resp   <- do.call(simulate_mupp_resp,
+                  params)
+
+# thetas for comparison
+thetas <- tidyr::spread(params$persons,
+                        key   = "dim",
+                        value = "theta")[ , -1]
+
+# estimating thetas using algorithm (one start for comparison purposes)
+est_thetas  <- estimate_mupp_thetas(resp    = resp$resp,
+                                    items   = params$items,
+                                    method  = "bfgs",
+                                    control = list(starts = 1))
+
+# correlating (super high correlations!)
+diag(cor(thetas, est_thetas$thetas))
+
+}
+\references{
+\itemize{
+  \item{Li & Dong-Hui (2001). A modified BFGS method and its global
+        convergence in nonconvex minimization. Journal of Computational and
+        Applied Mathematics, 129, 15-35.}
+}
+}
+\seealso{
+\code{\link{optimumLHS}}
 }
 \author{
 Steven Nydick, \email{steven.nydick@kornferry.com}

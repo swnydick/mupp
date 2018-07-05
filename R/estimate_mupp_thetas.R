@@ -6,15 +6,72 @@
 #' @param resp a data.frame of (at least) [person, item, resp]
 #' @param items a data.frame of (at least) [item, statement, dim, alpha, delta, tau]
 #' @param method the estimation method ("bfgs", "MCMC")
+#' @param control a list of parameters to control the algorithm. See details.
 #' @param ... other parameters to pass to the method
 #'
-#' @return a list of [thetas, vars, hessians, iters]
+#' @return a list of [thetas, vars, hessians, logliks, iters]
+#'
+#' @details Method BFGS uses a modified BFGS algorithm, based on Li and Fukushima (2001),
+#'          which includes modifications of the BFGS estimated hessian with demonstrated
+#'          global convergence properties.
+#'
+#' \itemize{
+#'   \item{For BFGS, control parameters include
+#'
+#'     \describe{
+#'       \item{eps}{convergence criterion, will converge if
+#'                  length of gradient is shorter than this value. Defaults
+#'                  to 1e-07.}
+#'       \item{max_iters}{maximum number of iterations before convergence. Defaults
+#'                        to 100.}
+#'       \item{starts}{number of random starts at different theta vectors (using
+#'                     latin hypercube samples. Defaults to 4.)}
+#'     }
+#'   }
+#' }
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
+#'
+#' @references
+#' \itemize{
+#'   \item{Li & Dong-Hui (2001). A modified BFGS method and its global
+#'         convergence in nonconvex minimization. Journal of Computational and
+#'         Applied Mathematics, 129, 15-35.}
+#' }
+#'
+#' @seealso \code{\link{optimumLHS}}
+#'
+#' @examples
+#' set.seed(23523)
+#'
+#' # simulate parameters and responses to the model
+#' # (assumption is that params/resp will follow conventions)
+#' params <- simulate_mupp_params(n_persons     = 10,
+#'                                n_items       = 300,
+#'                                n_dims        = 9,
+#'                                max_item_dims = 2,
+#'                                unidim_items  = TRUE)
+#' resp   <- do.call(simulate_mupp_resp,
+#'                   params)
+#'
+#' # thetas for comparison
+#' thetas <- tidyr::spread(params$persons,
+#'                         key   = "dim",
+#'                         value = "theta")[ , -1]
+#'
+#' # estimating thetas using algorithm (one start for comparison purposes)
+#' est_thetas  <- estimate_mupp_thetas(resp    = resp$resp,
+#'                                     items   = params$items,
+#'                                     method  = "bfgs",
+#'                                     control = list(starts = 1))
+#'
+#' # correlating (super high correlations!)
+#' diag(cor(thetas, est_thetas$thetas))
 #'
 #' @importFrom kfhelperfuns arrange_by_vars "%ni%"
 #' @importFrom magrittr "%>%" "%<>%" set_rownames multiply_by
 #' @importFrom data.table dcast as.data.table
+#' @importFrom lhs optimumLHS
 #' @export
 estimate_mupp_thetas <- function(resp,
                                  items,
@@ -88,8 +145,7 @@ estimate_mupp_thetas <- function(resp,
                                  control = control,
                                  ...)
 
-  # calculate SEM and return
-
+  # return
   return(out)
 
 } # END estimate_mupp_thetas FUNCTION
@@ -120,7 +176,8 @@ estimate_mupp_thetas_ <- function(resp,
   control_default <- list(prior_mean = 0,
                           prior_sd   = 1,
                           eps        = 1e-07,
-                          max_iters  = 100)
+                          max_iters  = 100,
+                          starts     = 4)
   control         <- modifyList(control_default,
                                 control)
 
@@ -128,6 +185,11 @@ estimate_mupp_thetas_ <- function(resp,
   estimation_fun   <- switch(method,
                              bfgs = estimate_mupp_thetas_bfgs,
                              stop(method, " method not implemented at this time."))
+
+  # progress bar #
+  pb <- txtProgressBar(max   = n_persons,
+                       char  = "|",
+                       style = 3)
 
   # estimating for each person
   for(person in seq_len(n_persons)){
@@ -142,15 +204,23 @@ estimate_mupp_thetas_ <- function(resp,
     # estimating theta
     out[[person]] <- do.call(what = estimation_fun,
                              args = args)
+
+    # progress bar #
+    setTxtProgressBar(pb    = pb,
+                      value = person)
   } # END for person LOOP
 
-  # update thetas to be everything in out bounded together
+  # progress bar #
+  close(pb)
+
+  # update thetas/hessians/iters/logliks to be everything in out bounded together
   thetas   <- lapply(out, "[[", "thetas") %>%
               do.call(what = rbind)
   hessians <- lapply(out, "[[", "hessian") %>%
               lapply(FUN = c) %>%
               do.call(what = rbind)
   iters    <- sapply(out, "[[", "iters")
+  logliks  <- sapply(out, "[[", "loglik")
 
   # determine actual variances
   vars     <- lapply(seq_len(nrow(thetas)),
@@ -166,6 +236,7 @@ estimate_mupp_thetas_ <- function(resp,
   return(list(thetas   = thetas,
               vars     = vars,
               hessians = hessians,
+              logliks  = logliks,
               iters    = iters))
 
 } # END estimate_mupp_thetas_ FUNCTION
