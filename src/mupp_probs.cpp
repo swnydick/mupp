@@ -293,8 +293,8 @@ NumericMatrix pder2_mupp_rank1(const NumericMatrix & P,
 
 List initialize_mupp_p(const NumericMatrix & thetas,
                        const NumericMatrix & params,
-                       IntegerVector dims            = NA_INTEGER,
-                       IntegerVector picked_order_id = NA_INTEGER) {
+                       IntegerVector dims            = 0,
+                       IntegerVector picked_order_id = 0) {
 
   // declare number of items/params (1) AND whether to return ALL combinations
   int n_persons  = thetas.nrow(),
@@ -304,19 +304,19 @@ List initialize_mupp_p(const NumericMatrix & thetas,
 
   // forcing dims and picked order ID to have positive length
   if(dims.size() == 0){
-    dims = IntegerVector::create(NA_INTEGER);
+    dims = IntegerVector::create(0);
   }
 
   if(picked_order_id.size() == 0){
-    picked_order_id = IntegerVector::create(NA_INTEGER);
+    picked_order_id = IntegerVector::create(0);
   }
 
   // fixing dims if it is NA or missing
-  if(dims[0] == NA_INTEGER){
+  if(dims[0] == 0){
     dims = seq_len(n_params);
   }
 
-  if(picked_order_id[0] == NA_INTEGER){
+  if((picked_order_id[0] == 0) | is_true(all(is_na(picked_order_id)))){
     picked_order_id = NA_INTEGER;
   } else{
     picked_order_id = rep_len(picked_order_id, n_persons);
@@ -351,7 +351,7 @@ List initialize_mupp_p(const NumericMatrix & thetas,
   if(!all_combs){
     if(max(picked_order_id_c) >= picked_orders.nrow()){
       stop("picked_order_id must be at most the factorial(number of dimensions)");
-    } else if(min(picked_order_id_c) < 0){
+    } else if(min(na_omit(picked_order_id_c)) < 0){
       stop("picked_order_id must be at least 1");
     }
   }
@@ -371,8 +371,8 @@ List initialize_mupp_p(const NumericMatrix & thetas,
 // [[Rcpp::export]]
 NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
                                const NumericMatrix & params,
-                               IntegerVector dims            = NA_INTEGER,
-                               IntegerVector picked_order_id = NA_INTEGER) {
+                               IntegerVector dims            = 0,
+                               IntegerVector picked_order_id = 0) {
 
   // Arguments:
   //  - thetas: matrix of persons x dims (for all dims)
@@ -426,15 +426,15 @@ NumericMatrix p_mupp_rank_impl(const NumericMatrix & thetas,
 // [[Rcpp::export]]
 ListOf<NumericMatrix> pder1_mupp_rank_impl(const NumericMatrix & thetas,
                                            const NumericMatrix & params,
-                                           IntegerVector dims            = NA_INTEGER,
-                                           IntegerVector picked_order_id = NA_INTEGER) {
+                                           IntegerVector dims            = 0,
+                                           IntegerVector picked_order_id = 0) {
 
   // Arguments:
   //  - thetas: matrix of persons x dims (for all dims)
   //  - params: matrix of dims x params (for single item dims)
   //  - dims:   vector of dims of the items
   //  - picked_order_id: index of picked order for each person
-  //                     (if NA, return ALL orders)
+  //                     (if 0, return ALL orders)
   //
   // Value:
   //  - list of P'(s > t > ...)(theta_s, theta_t, theta_ ...) ds, where the list
@@ -510,8 +510,8 @@ ListOf<NumericMatrix> pder1_mupp_rank_impl(const NumericMatrix & thetas,
 // [[Rcpp::export]]
 ListOf<NumericMatrix> pder2_mupp_rank_impl(const NumericMatrix & thetas,
                                            const NumericMatrix & params,
-                                           IntegerVector dims            = NA_INTEGER,
-                                           IntegerVector picked_order_id = NA_INTEGER) {
+                                           IntegerVector dims            = 0,
+                                           IntegerVector picked_order_id = 0) {
 
   // Arguments:
   //  - thetas: matrix of persons x dims (for all dims)

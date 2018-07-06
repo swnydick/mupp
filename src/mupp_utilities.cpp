@@ -92,9 +92,11 @@ void arrange_by_picked(NumericMatrix M,
     // pull out appropriate row of matrix (required due to swapping)
     M_person = M.row(person);
 
-    // put the ordered element in the appropriate place in the matrix
+    // put the ordered element in the appropriate place in the matrix (ignoring NAs)
     for(int i = 0; i < n_orders; i++){
-      M[person + n_persons * i] = M_person[all_orders[i + n_orders * indices[person]]];
+      if(indices[person] != NA_INTEGER){
+        M[person + n_persons * i] = M_person[all_orders[i + n_orders * indices[person]]];
+      }
     }
   }
 }

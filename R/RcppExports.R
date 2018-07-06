@@ -94,15 +94,15 @@ find_crossprod_dims <- function(dim12, n_dims, init = 0L) {
     .Call(`_mupp_find_crossprod_dims`, dim12, n_dims, init)
 }
 
-p_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id = NA_integer_) {
+p_mupp_rank_impl <- function(thetas, params, dims = 0L, picked_order_id = 0L) {
     .Call(`_mupp_p_mupp_rank_impl`, thetas, params, dims, picked_order_id)
 }
 
-pder1_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id = NA_integer_) {
+pder1_mupp_rank_impl <- function(thetas, params, dims = 0L, picked_order_id = 0L) {
     .Call(`_mupp_pder1_mupp_rank_impl`, thetas, params, dims, picked_order_id)
 }
 
-pder2_mupp_rank_impl <- function(thetas, params, dims = NA_integer_, picked_order_id = NA_integer_) {
+pder2_mupp_rank_impl <- function(thetas, params, dims = 0L, picked_order_id = 0L) {
     .Call(`_mupp_pder2_mupp_rank_impl`, thetas, params, dims, picked_order_id)
 }
 
