@@ -3,28 +3,38 @@
 # OVERALL #
 estimate_mupp_params_mcmc <- function(resp,
                                       items,
-                                      n_iters      = 10000,
-                                      n_burnin     = 1000,
-                                      step_size_sd = .1,
-                                      delta_sign   = NULL){
+                                      control        = list(),
+                                      initial_params = list(),
+                                      fixed_params   = NULL){
 
   # converting items to a matrix (so that it works in the C++ algorithm)
   items <- as.matrix(items)
 
+  # update control
+  control_default <- list(n_iters      = 10000,
+                          n_burnin     = 1000,
+                          step_size_sd = .1)
+  control         <- modifyList(control_default,
+                                control)
+
+  # fix initial_params/fixed_params
+  initial_params %<>% setNames(fix_param_names(names(.)))
+  fixed_params   %<>% fix_param_names(.)
+
   # INITIALIZE THETA/STATEMENT VALUES #
-  current_params  <- initialize_mupp_params_mcmc(resp  = resp,
-                                                 items = items,
-                                                 delta_sign = delta_sign)
+  current_params   <- initialize_mupp_params_mcmc(resp  = resp,
+                                                  items = items,
+                                                  initial_params = initial_params)
 
   # environment to store mcmc arguments and current loglikelihood
-  mcmc_temp_envir <- new.env()
+  mcmc_temp_envir  <- new.env()
 
   # adding argument to the environment
   assign(x     = "arguments",
          value = modifyList(x   = current_params,
                             val = list(items        = items,
                                        resp         = resp,
-                                       step_size_sd = step_size_sd,
+                                       step_size_sd = control$step_size_sd,
                                        mcmc_envir   = mcmc_temp_envir)),
          envir = mcmc_temp_envir)
 
@@ -36,6 +46,7 @@ estimate_mupp_params_mcmc <- function(resp,
 
 
   # setup output stuff
+  n_iters        <- control$n_iters
   all_params     <- names(current_params)
   all_mcmc_steps <- lapply(all_params %>% setNames(., .),
                            FUN = function(x){
@@ -54,7 +65,8 @@ estimate_mupp_params_mcmc <- function(resp,
   for(iter in seq_len(n_iters)){
 
     # generate next parameters
-    estimate_mupp_params_mcmc_(mcmc_envir = mcmc_temp_envir)
+    estimate_mupp_params_mcmc_(mcmc_envir   = mcmc_temp_envir,
+                               fixed_params = fixed_params)
 
     # assign to output lists
     for(param in names(current_params)){
@@ -70,6 +82,7 @@ estimate_mupp_params_mcmc <- function(resp,
   close(pb)
 
   # removing burnin
+  n_burnin        <- control$n_burnin
   keep_mcmc_steps <- all_mcmc_steps
   if(n_burnin > 0){
     burnin          <- seq_len(n_burnin)
@@ -89,26 +102,29 @@ estimate_mupp_params_mcmc <- function(resp,
                          f     = function(sims, means){
                            ss  <- Reduce("+", lapply(sims, "^", 2))
                            len <- length(sims)
-                           sds <- sqrt((ss / len - means^2) * (len - 1) / len)
+                           sds <- sqrt(max(0, (ss / len - means^2) * (len - 1) / len))
                          })
 
-  list(all  = all_mcmc_steps,
-       mean = mean_sims,
-       sd   = sd_sims)
+  list(all   = all_mcmc_steps,
+       means = mean_sims,
+       sds   = sd_sims)
 } # END estimate_mupp_params_mcmc FUNCTION
 
 # SINGLE ITERATION #
 
-estimate_mupp_params_mcmc_ <- function(mcmc_envir){
+estimate_mupp_params_mcmc_ <- function(mcmc_envir,
+                                       fixed_params = NULL){
 
-  # for each param:
+  # for each param (if NOT FIXED):
   #  - find the update function
   #  - update the param (using arguments) and assign back to the environment
   for(params in c("thetas", "alphas", "deltas", "taus")){
-    mcmc_update_fun                <- paste("update_mupp", params, "mcmc",
-                                            sep = "_")
-    mcmc_envir$arguments[[params]] <- do.call(what = mcmc_update_fun,
-                                              args = list(mcmc_envir = mcmc_envir))
+    if(params %ni% fixed_params){
+      mcmc_update_fun                <- paste("update_mupp", params, "mcmc",
+                                              sep = "_")
+      mcmc_envir$arguments[[params]] <- do.call(what = mcmc_update_fun,
+                                                args = list(mcmc_envir = mcmc_envir))
+    } # END if STATEMENT
   } # END for params LOOP
 
 } # END estimate_mupp_params_mcmc_
@@ -242,20 +258,35 @@ update_mupp_taus_mcmc <- function(mcmc_envir){
                           params_name = "taus")
 } # END update_mupp_taus_mcmc FUNCTION
 
-# INITIALIZATION #
+# INITIALIZATION AND NAMING #
+
+# naming parameters (correctly)
+fix_param_names <- function(x){
+
+  # determine old and new names for replacing
+  old_names <- c("theta", "alpha", "delta", "tau")
+  new_names <- paste0(old_names, "s")
+
+  # fixing names
+  if(any(flag <- x %in% old_names)){
+    x[flag] %<>% {new_names[match(., old_names)]}
+  } # END if STATEMENT
+
+  return(x)
+
+} # END fix_param_names FUNCTION
+
+
+# initialization
 initialize_mupp_params_mcmc <- function(resp, items,
-                                        delta_sign = NULL){
+                                        initial_params = NULL){
 
   # determine number of persons, dimensions, statements
   n_persons    <- nrow(resp)
   n_dims       <- max(unique(items[ , 3]))
   n_statements <- length(unique(items[ , 2]))
 
-  if(is.null(delta_sign)){
-    delta_sign <- 1
-  } # END if STATEMENT
-
-  # generating parameters
+  # default parameters #
 
   # - thetas all start at 0 (assume nothing)
   thetas <- matrix(0,
@@ -264,11 +295,22 @@ initialize_mupp_params_mcmc <- function(resp, items,
 
   # - alphas all start at 1, taus all start at -1
   alphas <- rep(+1, n_statements)
+  deltas <- rep(0,  n_statements)
   taus   <- rep(-1, n_statements)
 
-  # - deltas start at +1 for positive statements and -1 for negative statements
-  deltas <- rep(delta_sign,
-                length.out = n_statements)
+  # updating parameters (if initial params exists)
+  if(!is.null(initial_params$alphas)){
+    alphas[] <- initial_params$alphas
+  } # END if STATEMENT
+  if(!is.null(initial_params$deltas)){
+    deltas[] <- initial_params$deltas
+  } # END if STATEMENT
+  if(!is.null(initial_params$taus)){
+    taus[]   <- initial_params$taus
+  } # END if STATEMENT
+  if(!is.null(initial_params$thetas)){
+    thetas[] <- initial_params$thetas
+  } # END if STATEMENT
 
   # returnining results
   return(list(thetas = thetas,

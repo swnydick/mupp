@@ -9,7 +9,8 @@
 #' @param control a list of parameters to control the algorithm. See details.
 #' @param ... other parameters to pass to the method
 #'
-#' @return a list of [thetas, vars, hessians, logliks, iters]
+#' @return a list of [thetas, vars, hessians, logliks, iters] for MLE estimation
+#'         or [thetas, sds] for MCMC estimation
 #'
 #' @details Method BFGS uses a modified BFGS algorithm, based on Li and Fukushima (2001),
 #'          which includes modifications of the BFGS estimated hessian with demonstrated
@@ -24,8 +25,19 @@
 #'                  to 1e-07.}
 #'       \item{max_iters}{maximum number of iterations before convergence. Defaults
 #'                        to 100.}
-#'       \item{starts}{number of random starts at different theta vectors (using
-#'                     latin hypercube samples. Defaults to 4.)}
+#'       \item{n_starts}{number of random starts at different theta vectors (using
+#'                       latin hypercube samples. Defaults to 4.)}
+#'     }
+#'   }
+#'
+#'   \item{For MCMC, control parameters include
+#'
+#'     \describe{
+#'       \item{n_iters}{total number of iterations.}
+#'       \item{n_burnin}{number of iterations to throw away when calculating
+#'                       summary statistics.}
+#'       \item{step_size_sd}{the standard deviation of the step size for subsequent
+#'                           Metropolis-Hastings draws.}
 #'     }
 #'   }
 #' }
@@ -42,6 +54,7 @@
 #' @seealso \code{\link{optimumLHS}}
 #'
 #' @examples
+#' \dontrun{
 #' set.seed(23523)
 #'
 #' # simulate parameters and responses to the model
@@ -59,14 +72,25 @@
 #'                         key   = "dim",
 #'                         value = "theta")[ , -1]
 #'
-#' # estimating thetas using algorithm (one start for comparison purposes)
-#' est_thetas  <- estimate_mupp_thetas(resp    = resp$resp,
-#'                                     items   = params$items,
-#'                                     method  = "bfgs",
-#'                                     control = list(starts = 1))
+#' # estimating thetas using BFGS algorithm (one start for comparison purposes)
+#' est_thetas_mle  <- estimate_mupp_thetas(resp    = resp$resp,
+#'                                         items   = params$items,
+#'                                         method  = "bfgs",
+#'                                         control = list(n_starts = 1))
 #'
 #' # correlating (super high correlations!)
-#' diag(cor(thetas, est_thetas$thetas))
+#' diag(cor(thetas, est_thetas_mle$thetas))
+#'
+#' # estimating thetas using MCMC algorithm
+#' est_thetas_mcmc <- estimate_mupp_thetas(resp   = resp$resp,
+#'                                         items  = params$items,
+#'                                         method  = "mcmc",
+#'                                         control = list(n_iters  = 1000,
+#'                                                        n_burnin = 500))
+#'
+#' # correlating with MLE thetas (even higher correlations!)
+#' diag(cor(est_thetas_mle$thetas, est_thetas_mcmc$thetas))
+#' }
 #'
 #' @importFrom kfhelperfuns arrange_by_vars "%ni%"
 #' @importFrom magrittr "%>%" "%<>%" set_rownames multiply_by
@@ -79,68 +103,19 @@ estimate_mupp_thetas <- function(resp,
                                  control = list(),
                                  ...){
 
-  # argument checks #
-
-  # fix method
-  method   <- match.arg(method)
-
-  # converting to lowercase
-  resp   %<>% setNames(tolower(names(.)))
-  items  %<>% setNames(tolower(names(.)))
-
-  # pulling out template resp/item
-  template <- lapply(do.call(what = function(...){
-                               c(simulate_mupp_resp(...)["resp"], list(...))
-                             },
-                             args = simulate_mupp_params()),
-                     FUN = names)
-
-  # ordering the columns
-  resp   %<>% check_names(template$resp)
-  items  %<>% check_names(template$items)
-
-  # extracting variable names
-
-  # overall names
-  resp_names     <- names(resp)
-  item_names     <- names(items)
-
-  # individual names
-  person_name    <- head(resp_names, 1)
-  item_name      <- head(item_names, 1)
-  statement_name <- item_names[2]
-  resp_name      <- tail(resp_names, 1)
-
-  # pulling out old item/statement/person and setting new item to index
-  items_adj      <- sequence_column(df     = items,
-                                    column = item_name) %>%
-                    sequence_column(column = statement_name)
-  resp_adj       <- sequence_column(df     = resp,
-                                    column = person_name) %>%
-                    sequence_column(column = item_name,
-                                    old_values = unique(items[[item_name]]))
-
-  # transforming response to be of the appropriate form
-  cast_resp     <- as.formula(paste0(person_name, "~", item_name))
-
-  resp_adj      <- dcast(data      = as.data.table(resp_adj),
-                         formula   = cast_resp,
-                         value.var = resp_name)[ , -1] %>%
-                   as.matrix()
-
-  # updating to items/params/resp
-  params_adj    <- as.matrix(items_adj[4:ncol(items_adj)])
-  items_adj     <- as.matrix(items_adj[seq_len(3)])
+  # determine resp/items/params for algorithm
+  est_args      <- estimate_mupp_header_(resp, items,
+                                         type = "person")
 
   # run algorithm
   algorithm_fun <- switch(method,
-                          bfgs  = estimate_mupp_thetas_,
-                          MCMC  = ,
+                          bfgs = estimate_mupp_thetas_mle,
+                          mcmc = , MCMC  = estimate_mupp_thetas_mcmc,
                           stop(method, " method not implemented at this time."))
 
-  out           <- algorithm_fun(resp    = resp_adj,
-                                 params  = params_adj,
-                                 items   = items_adj,
+  out           <- algorithm_fun(resp    = est_args$resp_adj,
+                                 params  = est_args$params_adj,
+                                 items   = est_args$items_adj,
                                  method  = method,
                                  control = control,
                                  ...)
@@ -151,12 +126,13 @@ estimate_mupp_thetas <- function(resp,
 } # END estimate_mupp_thetas FUNCTION
 
 
-estimate_mupp_thetas_ <- function(resp,
-                                  params,
-                                  items,
-                                  method  = "bfgs",
-                                  control = list(),
-                                  ...){
+# MAXIMUM LIKELIHOOD ESTIMATION #
+estimate_mupp_thetas_mle <- function(resp,
+                                     params,
+                                     items,
+                                     method  = "bfgs",
+                                     control = list(),
+                                     ...){
 
 
   # converting everything to a matrix (to work in C++ algorithm)
@@ -177,7 +153,7 @@ estimate_mupp_thetas_ <- function(resp,
                           prior_sd   = 1,
                           eps        = 1e-07,
                           max_iters  = 100,
-                          starts     = 4)
+                          n_starts   = 4)
   control         <- modifyList(control_default,
                                 control)
 
@@ -239,4 +215,28 @@ estimate_mupp_thetas_ <- function(resp,
               logliks  = logliks,
               iters    = iters))
 
-} # END estimate_mupp_thetas_ FUNCTION
+} # END estimate_mupp_thetas_mle FUNCTION
+
+
+# MAXIMUM LIKELIHOOD ESTIMATION #
+estimate_mupp_thetas_mcmc <- function(resp,
+                                      params,
+                                      items,
+                                      control = list(),
+                                      ...){
+
+  # run the mcmc algorithm
+  out <- estimate_mupp_params_mcmc(resp    = resp,
+                                   items   = items,
+                                   control = control,
+                                   initial_params = as.list(as.data.frame(params)),
+                                   fixed_params   = colnames(params))
+
+  # pull out parameters
+  out <- list(thetas = out$means$thetas,
+              sds    = out$sds$thetas)
+
+
+  return(out)
+
+} # END estimate_mupp_thetas_mcmc FUNCTION

@@ -19,7 +19,8 @@ estimate_mupp_thetas(resp, items, method = c("bfgs", "MCMC"),
 \item{...}{other parameters to pass to the method}
 }
 \value{
-a list of [thetas, vars, hessians, logliks, iters]
+a list of [thetas, vars, hessians, logliks, iters] for MLE estimation
+        or [thetas, sds] for MCMC estimation
 }
 \description{
 Estimate MUPP person parameters given item responses, item parameters, and
@@ -39,13 +40,25 @@ Method BFGS uses a modified BFGS algorithm, based on Li and Fukushima (2001),
                  to 1e-07.}
       \item{max_iters}{maximum number of iterations before convergence. Defaults
                        to 100.}
-      \item{starts}{number of random starts at different theta vectors (using
-                    latin hypercube samples. Defaults to 4.)}
+      \item{n_starts}{number of random starts at different theta vectors (using
+                      latin hypercube samples. Defaults to 4.)}
+    }
+  }
+
+  \item{For MCMC, control parameters include
+
+    \describe{
+      \item{n_iters}{total number of iterations.}
+      \item{n_burnin}{number of iterations to throw away when calculating
+                      summary statistics.}
+      \item{step_size_sd}{the standard deviation of the step size for subsequent
+                          Metropolis-Hastings draws.}
     }
   }
 }
 }
 \examples{
+\dontrun{
 set.seed(23523)
 
 # simulate parameters and responses to the model
@@ -63,14 +76,25 @@ thetas <- tidyr::spread(params$persons,
                         key   = "dim",
                         value = "theta")[ , -1]
 
-# estimating thetas using algorithm (one start for comparison purposes)
-est_thetas  <- estimate_mupp_thetas(resp    = resp$resp,
-                                    items   = params$items,
-                                    method  = "bfgs",
-                                    control = list(starts = 1))
+# estimating thetas using BFGS algorithm (one start for comparison purposes)
+est_thetas_mle  <- estimate_mupp_thetas(resp    = resp$resp,
+                                        items   = params$items,
+                                        method  = "bfgs",
+                                        control = list(n_starts = 1))
 
 # correlating (super high correlations!)
-diag(cor(thetas, est_thetas$thetas))
+diag(cor(thetas, est_thetas_mle$thetas))
+
+# estimating thetas using MCMC algorithm
+est_thetas_mcmc <- estimate_mupp_thetas(resp   = resp$resp,
+                                        items  = params$items,
+                                        method  = "mcmc",
+                                        control = list(n_iters  = 1000,
+                                                       n_burnin = 500))
+
+# correlating with MLE thetas (even higher correlations!)
+diag(cor(est_thetas_mle$thetas, est_thetas_mcmc$thetas))
+}
 
 }
 \references{

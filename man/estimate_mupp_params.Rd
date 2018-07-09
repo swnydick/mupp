@@ -4,7 +4,7 @@
 \alias{estimate_mupp_params}
 \title{Estimate MUPP Parameters}
 \usage{
-estimate_mupp_params(resp, items, method = "MCMC", ...)
+estimate_mupp_params(resp, items, method = "MCMC", control = list(), ...)
 }
 \arguments{
 \item{resp}{a data.frame of (at least) [person, item, resp]}
@@ -13,15 +13,67 @@ estimate_mupp_params(resp, items, method = "MCMC", ...)
 
 \item{method}{the estimation method (MCMC is the only one that works now)}
 
+\item{control}{a list of parameters to control the algorithm. See details.}
+
 \item{...}{other parameters to add later}
 }
 \value{
 a list of [theta, params] arrays with the third dimension indicating
-        the iteration
+        the iteration as well as means and sds
 }
 \description{
 Estimate MUPP statement and person parameters given item responses and item
 properties using MCMC
+}
+\details{
+\itemize{
+  \item{For MCMC, control parameters include
+
+    \describe{
+      \item{n_iters}{total number of iterations.}
+      \item{n_burnin}{number of iterations to throw away when calculating
+                      summary statistics.}
+      \item{step_size_sd}{the standard deviation of the step size for subsequent
+                          Metropolis-Hastings draws.}
+    }
+  }
+}
+}
+\examples{
+\dontrun{
+set.seed(3452345)
+
+# simulate parameters and responses to the model
+# (assumption is that params/resp will follow conventions)
+params <- simulate_mupp_params(n_persons     = 100,
+                               n_items       = 300,
+                               n_dims        = 9,
+                               max_item_dims = 2,
+                               unidim_items  = TRUE)
+resp   <- do.call(simulate_mupp_resp,
+                  params)
+
+# thetas for comparison
+thetas <- tidyr::spread(params$persons,
+                        key   = "dim",
+                        value = "theta")[ , -1]
+items  <- params$items
+
+# estimating thetas using algorithm (one start for comparison purposes)
+est_params  <- estimate_mupp_params(resp    = resp$resp,
+                                    items   = resp$items,
+                                    method  = "MCMC",
+                                    control = list(n_iters  = 1000,
+                                                   n_burnin = 500),
+                                    initial_params = list(deltas = sign(items$delta)))
+
+# correlating (not great, but small iters and few people)
+cor(thetas,      est_params$means$thetas)
+cor(items$alpha, est_params$means$alphas)
+cor(items$delta, est_params$means$deltas)
+cor(items$tau,   est_params$mean$taus)
+}
+
 }
 \author{
 Steven Nydick, \email{steven.nydick@kornferry.com}
