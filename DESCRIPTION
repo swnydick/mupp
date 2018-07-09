@@ -11,7 +11,9 @@ Imports:
   Rcpp (>= 0.12.16),
   magrittr,
   data.table,
-  lhs
+  lhs,
+  extraDistr,
+  kfhelperfuns
 Suggests: 
   testthat,
   numDeriv,
