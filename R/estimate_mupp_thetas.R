@@ -144,6 +144,13 @@ estimate_mupp_thetas_mle <- function(resp,
   n_persons <- nrow(resp)
   n_dims    <- max(items[ , 3])
 
+  # making sure number of dimensions is OK
+  if(n_dims > 2){
+    stop("MLE estimation not yet implemented for MUPP-RANK models. ",
+         "Please use MCMC for theta/parameter estimation.",
+         call. = FALSE)
+  } # END if STATEMENT
+
   # create matrix of thetas based on maximum dimension
   out       <- vector(mode   = "list",
                       length = n_persons)

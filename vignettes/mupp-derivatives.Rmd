@@ -104,7 +104,7 @@ plot_irt_models(df    = df_prob,
 ```
 
 Note that in both models, the "location" parameter ($b$ in the 2PL and $\delta$
-in the GGUM model) is set to 0. However, the meanining of location differ between
+in the GGUM model) is set to 0. However, the meaning of location differ between
 models. For the 2PL, location refers to the inflection point of the IRT function
 (i.e., the point at which the slope is at its maximum). However, with respect
 to the GGUM model, the location refers not to the point at which the change
