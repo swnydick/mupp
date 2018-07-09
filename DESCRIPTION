@@ -1,29 +1,29 @@
 Package: mupp
-Version: 0.1.0
 Title: Multi-Unidimensional Pairwise Preference (MUPP) IRT Model
-Description: Probability functions to describe the MUPP model, simulate responses to the MUPP model, and estimate parameters of the MUPP model.
+Version: 0.1.0
 Authors@R: c(person("Steven", "Nydick", email = "steven.nydick@kornferry.com", role = c("aut", "cre")))
-Depends:
-  R (>= 3.4.0)
-LinkingTo:
-  Rcpp (>= 0.12.16)
-Imports:
-  Rcpp (>= 0.12.16),
-  magrittr,
-  data.table,
-  lhs,
-  extraDistr,
-  kfhelperfuns
-Suggests: 
-  testthat,
-  numDeriv,
-  tidyr,
-  knitr,
-  rmarkdown,
-  ggplot2
+Description: Probability functions to describe the MUPP model, simulate responses to the MUPP model, and estimate parameters of the MUPP model.
 License: file LICENSE
+Depends: 
+    R (>= 3.4.0)
+Imports: 
+    data.table (>= 1.10.4.3),
+    extraDistr (>= 1.8.9),
+    kfhelperfuns (>= 0.0.1),
+    lhs (>= 0.16),
+    magrittr (>= 1.5),
+    Rcpp (>= 0.12.16)
+Suggests: 
+    ggplot2 (>= 2.2.1),
+    knitr (>= 1.20),
+    numDeriv (>= 2016.8.1),
+    rmarkdown (>= 1.9),
+    testthat (>= 2.0.0),
+    tidyr (>= 0.8.0)
+LinkingTo: 
+    Rcpp (>= 0.12.16)
+VignetteBuilder: knitr
+ByteCompile: true
 Encoding: UTF-8
 LazyData: true
-ByteCompile: true
 RoxygenNote: 6.0.1
-VignetteBuilder: knitr
