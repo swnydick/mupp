@@ -7,7 +7,7 @@ estimate_mupp_thetas_bfgs <- function(...,
                                       n_starts  = 3){
 
   # initial thetas (for multiple iterations)
-  random_thetas <- tryCatch(optimumLHS(n = starts - 1,
+  random_thetas <- tryCatch(optimumLHS(n = n_starts - 1,
                                        k = n_dims),
                             error = function(x){
                               matrix(nrow = 0,
