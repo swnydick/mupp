@@ -7,12 +7,25 @@
 #' @param items a data.frame of (at least) [item, statement, dim]
 #' @param method the estimation method (MCMC is the only one that works now)
 #' @param control a list of parameters to control the algorithm. See details.
-#' @param ... other parameters to add later
+#' @param ... other parameters to pass to the estimation algorithm. See details.
 #'
 #' @return a list of [theta, params] arrays with the third dimension indicating
 #'         the iteration as well as means and sds
 #'
 #' @details
+#'
+#' \itemize{
+#'   \item{For MCMC, additional parameters include
+#'     \describe{
+#'       \item{initial_params}{a named list with names indicating the parameter
+#'                             and values indicating the starting values/initial
+#'                             parameter estimates}
+#'       \item{fixed_params}{a character vector with elements that are fixed
+#'                           to their initial parameters for the entire estimation
+#'                           algorithm}
+#'     }
+#'   }
+#' }
 #'
 #' \itemize{
 #'   \item{For MCMC, control parameters include

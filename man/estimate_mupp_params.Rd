@@ -15,7 +15,7 @@ estimate_mupp_params(resp, items, method = "MCMC", control = list(), ...)
 
 \item{control}{a list of parameters to control the algorithm. See details.}
 
-\item{...}{other parameters to add later}
+\item{...}{other parameters to pass to the estimation algorithm. See details.}
 }
 \value{
 a list of [theta, params] arrays with the third dimension indicating
@@ -26,6 +26,19 @@ Estimate MUPP statement and person parameters given item responses and item
 properties using MCMC
 }
 \details{
+\itemize{
+  \item{For MCMC, additional parameters include
+    \describe{
+      \item{initial_params}{a named list with names indicating the parameter
+                            and values indicating the starting values/initial
+                            parameter estimates}
+      \item{fixed_params}{a character vector with elements that are fixed
+                          to their initial parameters for the entire estimation
+                          algorithm}
+    }
+  }
+}
+
 \itemize{
   \item{For MCMC, control parameters include
 
