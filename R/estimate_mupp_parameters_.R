@@ -68,13 +68,13 @@
 #'                                     method  = "MCMC",
 #'                                     control = list(n_iters  = 1000,
 #'                                                    n_burnin = 500),
-#'                                     initial_params = list(deltas = sign(items$delta)))
+#'                                     initial_params = list(delta = sign(items$delta)))
 #'
 #' # correlating (not great, but small iters and few people)
-#' cor(thetas,      est_params$means$thetas)
-#' cor(items$alpha, est_params$means$alphas)
-#' cor(items$delta, est_params$means$deltas)
-#' cor(items$tau,   est_params$mean$taus)
+#' diag(cor(thetas, est_params$means$thetas))
+#' cor(items$alpha, est_params$means$alpha)
+#' cor(items$delta, est_params$means$delta)
+#' cor(items$tau,   est_params$mean$tau)
 #' }
 #'
 #' @importFrom kfhelperfuns arrange_by_vars "%ni%"

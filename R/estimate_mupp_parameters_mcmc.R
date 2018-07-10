@@ -100,9 +100,10 @@ estimate_mupp_params_mcmc <- function(resp,
   sd_sims         <- Map(sims  = keep_mcmc_steps,
                          means = mean_sims,
                          f     = function(sims, means){
-                           ss  <- Reduce("+", lapply(sims, "^", 2))
-                           len <- length(sims)
-                           sds <- sqrt(max(0, (ss / len - means^2) * (len - 1) / len))
+                           ss      <- Reduce("+", lapply(sims, "^", 2))
+                           len     <- length(sims)
+                           means[] <- sqrt(pmax(0, (ss / len - means^2) * (len - 1) / len))
+                           return(means)
                          })
 
   list(all   = all_mcmc_steps,
@@ -118,7 +119,7 @@ estimate_mupp_params_mcmc_ <- function(mcmc_envir,
   # for each param (if NOT FIXED):
   #  - find the update function
   #  - update the param (using arguments) and assign back to the environment
-  for(params in c("thetas", "alphas", "deltas", "taus")){
+  for(params in c("thetas", "alpha", "delta", "tau")){
     if(params %ni% fixed_params){
       mcmc_update_fun                <- paste("update_mupp", params, "mcmc",
                                               sep = "_")
@@ -180,7 +181,7 @@ update_mupp_thetas_mcmc <- function(mcmc_envir){
 
 # ALL PARAMS #
 update_mupp_params_mcmc <- function(mcmc_envir,
-                                    params_name = "alphas"){
+                                    params_name = "alpha"){
 
   # all arguments and item list
   arguments     <- mcmc_envir$arguments
@@ -243,20 +244,20 @@ update_mupp_params_mcmc <- function(mcmc_envir,
 } # END update_mupp_params_mcmc FUNCTION
 
 # ALPHA/DELTA/TAU #
-update_mupp_alphas_mcmc <- function(mcmc_envir){
+update_mupp_alpha_mcmc <- function(mcmc_envir){
   update_mupp_params_mcmc(mcmc_envir  = mcmc_envir,
-                          params_name = "alphas")
-} # END update_mupp_alphas_mcmc FUNCTION
+                          params_name = "alpha")
+} # END update_mupp_alpha_mcmc FUNCTION
 
-update_mupp_deltas_mcmc <- function(mcmc_envir){
+update_mupp_delta_mcmc <- function(mcmc_envir){
   update_mupp_params_mcmc(mcmc_envir  = mcmc_envir,
-                          params_name = "deltas")
-} # END update_mupp_deltas_mcmc FUNCTION
+                          params_name = "delta")
+} # END update_mupp_delta_mcmc FUNCTION
 
-update_mupp_taus_mcmc <- function(mcmc_envir){
+update_mupp_tau_mcmc <- function(mcmc_envir){
   update_mupp_params_mcmc(mcmc_envir  = mcmc_envir,
-                          params_name = "taus")
-} # END update_mupp_taus_mcmc FUNCTION
+                          params_name = "tau")
+} # END update_mupp_tau_mcmc FUNCTION
 
 # INITIALIZATION AND NAMING #
 
@@ -264,8 +265,8 @@ update_mupp_taus_mcmc <- function(mcmc_envir){
 fix_param_names <- function(x){
 
   # determine old and new names for replacing
-  old_names <- c("theta", "alpha", "delta", "tau")
-  new_names <- paste0(old_names, "s")
+  old_names <- c("theta", "alphas", "deltas", "taus")
+  new_names <- c("thetas", "alpha", "delta", "tau")
 
   # fixing names
   if(any(flag <- x %in% old_names)){
@@ -294,19 +295,19 @@ initialize_mupp_params_mcmc <- function(resp, items,
                    ncol = n_dims)
 
   # - alphas all start at 1, taus all start at -1
-  alphas <- rep(+1, n_statements)
-  deltas <- rep(0,  n_statements)
-  taus   <- rep(-1, n_statements)
+  alpha  <- rep(+1, n_statements)
+  delta  <- rep(0,  n_statements)
+  tau    <- rep(-1, n_statements)
 
   # updating parameters (if initial params exists)
-  if(!is.null(initial_params$alphas)){
-    alphas[] <- initial_params$alphas
+  if(!is.null(initial_params$alpha)){
+    alpha[] <- initial_params$alpha
   } # END if STATEMENT
-  if(!is.null(initial_params$deltas)){
-    deltas[] <- initial_params$deltas
+  if(!is.null(initial_params$delta)){
+    delta[] <- initial_params$delta
   } # END if STATEMENT
-  if(!is.null(initial_params$taus)){
-    taus[]   <- initial_params$taus
+  if(!is.null(initial_params$tau)){
+    tau[]   <- initial_params$tau
   } # END if STATEMENT
   if(!is.null(initial_params$thetas)){
     thetas[] <- initial_params$thetas
@@ -314,9 +315,9 @@ initialize_mupp_params_mcmc <- function(resp, items,
 
   # returnining results
   return(list(thetas = thetas,
-              alphas = alphas,
-              deltas = deltas,
-              taus   = taus))
+              alpha = alpha,
+              delta = delta,
+              tau   = tau))
 
 } # END initialize_mupp_params_mcmc FUNCTION
 
@@ -330,15 +331,15 @@ generate_new_params <- function(x,
 
 # modified loglikelihood function
 loglik_mupp_rank_mcmc <- function(thetas,
-                                  alphas,
-                                  deltas,
-                                  taus,
+                                  alpha,
+                                  delta,
+                                  tau,
                                   items,
                                   resp,
                                   ...){
 
   loglik_mupp_rank_impl(thetas = thetas,
-                        params = cbind(alphas, deltas, taus),
+                        params = cbind(alpha, delta, tau),
                         items  = items,
                         picked_orders = resp)
 

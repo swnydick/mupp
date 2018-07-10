@@ -19,8 +19,8 @@ estimate_mupp_thetas(resp, items, method = c("bfgs", "MCMC"),
 \item{...}{other parameters to pass to the method}
 }
 \value{
-a list of [thetas, vars, hessians, logliks, iters] for MLE estimation
-        or [thetas, sds] for MCMC estimation
+a list of [estimates, vars, hessian, loglik, iters] for MLE estimation
+        or [estimates, sds] for MCMC estimation
 }
 \description{
 Estimate MUPP person parameters given item responses, item parameters, and
@@ -83,7 +83,7 @@ est_thetas_mle  <- estimate_mupp_thetas(resp    = resp$resp,
                                         control = list(n_starts = 1))
 
 # correlating (super high correlations!)
-diag(cor(thetas, est_thetas_mle$thetas))
+diag(cor(thetas, est_thetas_mle$estimates))
 
 # estimating thetas using MCMC algorithm
 est_thetas_mcmc <- estimate_mupp_thetas(resp   = resp$resp,
@@ -93,7 +93,7 @@ est_thetas_mcmc <- estimate_mupp_thetas(resp   = resp$resp,
                                                        n_burnin = 500))
 
 # correlating with MLE thetas (even higher correlations!)
-diag(cor(est_thetas_mle$thetas, est_thetas_mcmc$thetas))
+diag(cor(est_thetas_mle$estimates, est_thetas_mcmc$estimates))
 }
 
 }

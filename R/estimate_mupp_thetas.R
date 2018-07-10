@@ -9,8 +9,8 @@
 #' @param control a list of parameters to control the algorithm. See details.
 #' @param ... other parameters to pass to the method
 #'
-#' @return a list of [thetas, vars, hessians, logliks, iters] for MLE estimation
-#'         or [thetas, sds] for MCMC estimation
+#' @return a list of [estimates, vars, hessian, loglik, iters] for MLE estimation
+#'         or [estimates, sds] for MCMC estimation
 #'
 #' @details Method BFGS uses a modified BFGS algorithm, based on Li and Fukushima (2001),
 #'          which includes modifications of the BFGS estimated hessian with demonstrated
@@ -79,7 +79,7 @@
 #'                                         control = list(n_starts = 1))
 #'
 #' # correlating (super high correlations!)
-#' diag(cor(thetas, est_thetas_mle$thetas))
+#' diag(cor(thetas, est_thetas_mle$estimates))
 #'
 #' # estimating thetas using MCMC algorithm
 #' est_thetas_mcmc <- estimate_mupp_thetas(resp   = resp$resp,
@@ -89,7 +89,7 @@
 #'                                                        n_burnin = 500))
 #'
 #' # correlating with MLE thetas (even higher correlations!)
-#' diag(cor(est_thetas_mle$thetas, est_thetas_mcmc$thetas))
+#' diag(cor(est_thetas_mle$estimates, est_thetas_mcmc$estimates))
 #' }
 #'
 #' @importFrom kfhelperfuns arrange_by_vars "%ni%"
@@ -145,7 +145,7 @@ estimate_mupp_thetas_mle <- function(resp,
   n_dims        <- max(items[ , 3])
 
   # determining maximum number of "dimensions" on a single item
-  max_item_dims <- max(tapply(X = items[ , 3], INDEX = items[ , 1], FUN = length))
+  max_item_dims <- max(table(items[ , 1]))
 
   # making sure number of dimensions is OK
   if(max_item_dims > 2){
@@ -202,28 +202,28 @@ estimate_mupp_thetas_mle <- function(resp,
   # update thetas/hessians/iters/logliks to be everything in out bounded together
   thetas   <- lapply(out, "[[", "thetas") %>%
               do.call(what = rbind)
-  hessians <- lapply(out, "[[", "hessian") %>%
+  hessian  <- lapply(out, "[[", "hessian") %>%
               lapply(FUN = c) %>%
               do.call(what = rbind)
   iters    <- sapply(out, "[[", "iters")
-  logliks  <- sapply(out, "[[", "loglik")
+  loglik   <- sapply(out, "[[", "loglik")
 
   # determine actual variances
-  vars     <- lapply(seq_len(nrow(thetas)),
-                     FUN = function(i){
-                       H <- lder2_mupp_rank_with_prior1(thetas = thetas[i, ],
-                                                        resp   = rbind(resp[i, ]),
-                                                        params = params,
-                                                        items  = items)
-                       c(solve(H))
-                     }) %>%
-              do.call(what = rbind)
+  var     <- lapply(seq_len(nrow(thetas)),
+                    FUN = function(i){
+                      H <- lder2_mupp_rank_with_prior1(thetas = thetas[i, ],
+                                                       resp   = rbind(resp[i, ]),
+                                                       params = params,
+                                                       items  = items)
+                      c(solve(H))
+                    }) %>%
+             do.call(what = rbind)
 
-  return(list(thetas   = thetas,
-              vars     = vars,
-              hessians = hessians,
-              logliks  = logliks,
-              iters    = iters))
+  return(list(estimates = thetas,
+              vars      = var,
+              hessian   = hessian,
+              loglik    = loglik,
+              iters     = iters))
 
 } # END estimate_mupp_thetas_mle FUNCTION
 
@@ -243,8 +243,8 @@ estimate_mupp_thetas_mcmc <- function(resp,
                                    fixed_params   = colnames(params))
 
   # pull out parameters
-  out <- list(thetas = out$means$thetas,
-              sds    = out$sds$thetas)
+  out <- list(estimates = out$means$thetas,
+              sds       = out$sds$thetas)
 
 
   return(out)
