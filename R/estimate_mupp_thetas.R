@@ -92,10 +92,14 @@
 #' diag(cor(est_thetas_mle$estimates, est_thetas_mcmc$estimates))
 #' }
 #'
-#' @importFrom kfhelperfuns arrange_by_vars "%ni%"
-#' @importFrom magrittr "%>%" "%<>%" set_rownames multiply_by
-#' @importFrom data.table dcast as.data.table
-#' @importFrom lhs optimumLHS
+#' @importFrom kfhelperfuns
+#'             arrange_by_vars "%ni%"
+#' @importFrom magrittr
+#'             "%>%" "%<>%" set_rownames multiply_by
+#' @importFrom data.table
+#'             dcast as.data.table
+#' @importFrom lhs
+#'             optimumLHS
 #' @export
 estimate_mupp_thetas <- function(resp,
                                  items,
@@ -127,6 +131,9 @@ estimate_mupp_thetas <- function(resp,
 
 
 # MAXIMUM LIKELIHOOD ESTIMATION #
+#' @importFrom utils
+#'             modifyList
+#'             txtProgressBar setTxtProgressBar
 estimate_mupp_thetas_mle <- function(resp,
                                      params,
                                      items,

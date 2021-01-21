@@ -156,7 +156,6 @@ test_that("mupp response conversion works", {
     expect_equal(simulate_mupp_resp1(prob),
                  resp[[i]])
   } # END for i LOOP
-
 })
 
 
@@ -236,7 +235,7 @@ test_that("mupp response simulation works", {
   # specify response (note: set.seed(resp_seed); simulate_mupp_params(); runif(n))
   resp    <- data.frame(person = 1,
                         item   = c(1, 2),
-                        resp   = c(3, 1))
+                        resp   = c(2, 2))
 
   # set seed (so response matches) and compare
   set.seed(resp_seed)
@@ -319,12 +318,11 @@ test_that("mupp response simulation works", {
   # specify response (note: set.seed(resp_seed); simulate_mupp_params(); runif(n))
   resp    <- data.frame(person = c(1, 1, 2, 2),
                         item   = c(1, 2, 1, 2),
-                        resp   = c(4, 1, 4, 1))
+                        resp   = c(4, 2, 3, 2))
 
   # set seed (so response matches) and compare
   set.seed(resp_seed)
   expect_equal(do.call(what = simulate_mupp_resp,
                        args = persons)$resp,
                resp)
-
 })

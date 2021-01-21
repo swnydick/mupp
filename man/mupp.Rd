@@ -3,7 +3,6 @@
 \docType{package}
 \name{mupp}
 \alias{mupp}
-\alias{mupp-package}
 \title{mupp}
 \description{
 Probability functions to describe the MUPP model, simulate responses to the

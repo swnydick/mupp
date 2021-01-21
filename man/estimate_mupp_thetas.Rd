@@ -4,8 +4,13 @@
 \alias{estimate_mupp_thetas}
 \title{Estimate MUPP Thetas}
 \usage{
-estimate_mupp_thetas(resp, items, method = c("bfgs", "MCMC"),
-  control = list(), ...)
+estimate_mupp_thetas(
+  resp,
+  items,
+  method = c("bfgs", "MCMC"),
+  control = list(),
+  ...
+)
 }
 \arguments{
 \item{resp}{a data.frame of (at least) [person, item, resp]}

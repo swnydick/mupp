@@ -1,6 +1,11 @@
 # ESTIMATION: MCMC #
 
 # OVERALL #
+#' @importFrom utils
+#'             modifyList
+#'             txtProgressBar setTxtProgressBar
+#' @importFrom stats
+#'             setNames
 estimate_mupp_params_mcmc <- function(resp,
                                       items,
                                       control        = list(),
@@ -113,6 +118,8 @@ estimate_mupp_params_mcmc <- function(resp,
 
 # SINGLE ITERATION #
 
+#' @importFrom utils
+#'             modifyList
 estimate_mupp_params_mcmc_ <- function(mcmc_envir,
                                        fixed_params = NULL){
 
@@ -180,6 +187,10 @@ update_mupp_thetas_mcmc <- function(mcmc_envir){
 } # END update_mupp_thetas_mcmc FUNCTION
 
 # ALL PARAMS #
+#' @importFrom utils
+#'             modifyList
+#' @importFrom stats
+#'             setNames
 update_mupp_params_mcmc <- function(mcmc_envir,
                                     params_name = "alpha"){
 
@@ -188,9 +199,9 @@ update_mupp_params_mcmc <- function(mcmc_envir,
   items         <- arguments$items
 
   # singular params name ??
-  d_fun         <- gsub(x = params_name,
-                        pattern = "s$",
-                        replace = "") %>%
+  d_fun         <- gsub(x            = params_name,
+                        pattern      = "s$",
+                        replacement  = "") %>%
                    paste("d", ., "prior",
                          sep = "_")
 
@@ -324,6 +335,8 @@ initialize_mupp_params_mcmc <- function(resp, items,
 # HELPER FUNCTIONS #
 
 # generate new parameters given old parameters
+#' @importFrom stats
+#'             rnorm
 generate_new_params <- function(x,
                                 sd = .1){
   rnorm(n = length(x), mean = x, sd = sd)
@@ -346,6 +359,8 @@ loglik_mupp_rank_mcmc <- function(thetas,
 } # END loglik_mupp_rank_mcmc FUNCTION
 
 # determine whether to update the MCMC algorithm
+#' @importFrom stats
+#'             runif
 update_with_metrop <- function(values_old,
                                values_new,
                                loglik_old,

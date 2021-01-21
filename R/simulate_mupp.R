@@ -18,8 +18,13 @@
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
 #'
-#' @importFrom kfhelperfuns arrange_by_vars
-#' @importFrom magrittr "%>%" set_rownames
+#' @importFrom kfhelperfuns
+#'             arrange_by_vars
+#' @importFrom magrittr
+#'             "%>%" set_rownames inset2
+#' @importFrom stats
+#'             setNames
+#'             reshape
 #' @export
 simulate_mupp_params <- function(n_persons     = 1,
                                  n_items       = 1,
@@ -43,7 +48,7 @@ simulate_mupp_params <- function(n_persons     = 1,
     unidim_items <- TRUE
   } else{
     unidim_items <- as.logical(unidim_items)[1]
-  }
+  } # END ifelse STATEMENT
 
   ## persons ##
 
@@ -80,18 +85,21 @@ simulate_mupp_params <- function(n_persons     = 1,
                                  replace = TRUE))
 
   # which dim each item loads on
-  items        <- lapply(X   = seq_along(items_n_dims),
-                         FUN = function(i){
-                           item_dims  <- items_n_dims[i]
-                           data.frame(item      = i,
-                                      statement = NA,
-                                      dim       = sort(sample(x       = seq_len(n_dims),
-                                                              size    = item_dims,
-                                                              replace = unidim_items)))
-                         }) %>%
-                  do.call(what = rbind)
-  items        <- transform(items,
-                            statement = seq_along(statement))
+  items        <- lapply(
+    X   = seq_along(items_n_dims),
+    FUN = function(i){
+      item_dims  <- items_n_dims[i]
+      data.frame(item      = i,
+                 statement = NA,
+                 dim       = sort(sample(x       = seq_len(n_dims),
+                                         size    = item_dims,
+                                         replace = unidim_items)))
+    }
+  )
+
+  items %<>% do.call(what = rbind) %>%
+             inset2("statement",
+                    value = seq_along(.$statement))
 
   # the total number of parameters
   n_params     <- nrow(items)
@@ -124,9 +132,18 @@ simulate_mupp_params <- function(n_persons     = 1,
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
 #'
-#' @importFrom kfhelperfuns arrange_by_vars "%ni%"
-#' @importFrom magrittr "%>%" "%<>%" set_rownames
-#' @importFrom data.table dcast as.data.table
+#' @importFrom kfhelperfuns
+#'             arrange_by_vars "%ni%"
+#' @importFrom magrittr
+#'             "%>%" "%<>%" set_rownames
+#' @importFrom data.table
+#'             dcast as.data.table
+#' @importFrom stats
+#'             setNames
+#'             as.formula
+#' @importFrom utils
+#'             head tail
+#'             type.convert
 #' @export
 simulate_mupp_resp <- function(persons,
                                items){
@@ -268,6 +285,8 @@ simulate_mupp_resp_ <- function(probs){
 
 } # END simulate_mupp_resp_ FUNCTION
 
+#' @importFrom stats
+#'             runif
 simulate_mupp_resp1 <- function(probs){
 
   # make sure mat is a data.matrix

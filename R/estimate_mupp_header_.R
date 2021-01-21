@@ -1,4 +1,9 @@
 # function to use in both estimate_mupp_params and estimate_mupp_thetas
+#' @importFrom stats
+#'             setNames
+#'             as.formula
+#' @importFrom utils
+#'             head tail
 estimate_mupp_header_ <- function(resp,
                                   items,
                                   type = "person"){

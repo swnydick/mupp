@@ -4,8 +4,13 @@
 \alias{simulate_mupp_params}
 \title{Simulate MUPP Parameters}
 \usage{
-simulate_mupp_params(n_persons = 1, n_items = 1, n_dims = 2,
-  max_item_dims = NULL, unidim_items = FALSE)
+simulate_mupp_params(
+  n_persons = 1,
+  n_items = 1,
+  n_dims = 2,
+  max_item_dims = NULL,
+  unidim_items = FALSE
+)
 }
 \arguments{
 \item{n_persons}{integer indicating the number of persons}

@@ -81,7 +81,7 @@ est_params  <- estimate_mupp_params(resp    = resp$resp,
                                     initial_params = list(delta = sign(items$delta)))
 
 # correlating (not great, but small iters and few people)
-cor(thetas,      est_params$means$thetas)
+diag(cor(thetas, est_params$means$thetas))
 cor(items$alpha, est_params$means$alpha)
 cor(items$delta, est_params$means$delta)
 cor(items$tau,   est_params$mean$tau)

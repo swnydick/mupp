@@ -31,6 +31,8 @@ r_tau_prior(n, ...)
 \arguments{
 \item{x}{vector of quantiles}
 
+\item{...}{additional arguments to pass to the prior functions}
+
 \item{n}{number of observations required for the simulation}
 }
 \description{

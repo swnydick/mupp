@@ -4,6 +4,7 @@
 #'
 #' @param x vector of quantiles
 #' @param n number of observations required for the simulation
+#' @param ... additional arguments to pass to the prior functions
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
 #'
@@ -14,12 +15,16 @@
 NULL
 
 #' @rdname prior_ggum
+#' @importFrom stats
+#'             dnorm
 #' @export
 d_thetas_prior <- function(x, ...){
   dnorm(x, ...)
 } # END d_thetas_prior FUNCTION
 
 #' @rdname prior_ggum
+#' @importFrom utils
+#'             modifyList
 #' @export
 d_alpha_prior <- function(x, ...){
   params <- list(x      = x,
@@ -33,6 +38,8 @@ d_alpha_prior <- function(x, ...){
 } # END d_alpha_prior FUNCTION
 
 #' @rdname prior_ggum
+#' @importFrom utils
+#'             modifyList
 #' @export
 d_delta_prior <- function(x, ...){
   params <- list(x      = x,
@@ -46,6 +53,8 @@ d_delta_prior <- function(x, ...){
 } # END d_delta_prior FUNCTION
 
 #' @rdname prior_ggum
+#' @importFrom utils
+#'             modifyList
 #' @export
 d_tau_prior <- function(x, ...){
   params <- list(x      = x,
@@ -60,12 +69,16 @@ d_tau_prior <- function(x, ...){
 
 
 #' @rdname prior_ggum
+#' @importFrom stats
+#'             rnorm
 #' @export
 r_thetas_prior <- function(n, ...){
   rnorm(n, ...)
 } # END r_thetas_prior FUNCTION
 
 #' @rdname prior_ggum
+#' @importFrom utils
+#'             modifyList
 #' @export
 r_alpha_prior <- function(n, ...){
   params <- list(n      = n,
@@ -79,6 +92,8 @@ r_alpha_prior <- function(n, ...){
 } # END r_alpha_prior FUNCTION
 
 #' @rdname prior_ggum
+#' @importFrom utils
+#'             modifyList
 #' @export
 r_delta_prior <- function(n, ...){
   params <- list(n      = n,
@@ -92,6 +107,8 @@ r_delta_prior <- function(n, ...){
 } # END r_delta_prior FUNCTION
 
 #' @rdname prior_ggum
+#' @importFrom utils
+#'             modifyList
 #' @export
 r_tau_prior <- function(n, ...){
   params <- list(n      = n,
