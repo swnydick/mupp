@@ -75,5 +75,4 @@ estimate_mupp_header_ <- function(resp,
               resp_adj   = resp_adj,
               items_adj  = items_adj,
               params_adj = params_adj))
-
 } # END estimate_mupp_header_ FUNCTION

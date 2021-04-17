@@ -18,8 +18,6 @@
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
 #'
-#' @importFrom kfhelperfuns
-#'             arrange_by_vars
 #' @importFrom magrittr
 #'             "%>%" set_rownames inset2
 #' @importFrom stats
@@ -132,8 +130,8 @@ simulate_mupp_params <- function(n_persons     = 1,
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
 #'
-#' @importFrom kfhelperfuns
-#'             arrange_by_vars "%ni%"
+#' @importFrom roperators
+#'             "%ni%"
 #' @importFrom magrittr
 #'             "%>%" "%<>%" set_rownames
 #' @importFrom data.table
@@ -214,7 +212,6 @@ simulate_mupp_resp <- function(persons,
 
   return(list(items = items,
               resp  = resp))
-
 } # END simulate_mupp_responses FUNCTION
 
 
@@ -236,7 +233,6 @@ determine_mupp_probs_  <- function(items,
                     ...)
 
   return(probs)
-
 } # END determine_mupp_probs_ FUNCTION
 
 determine_mupp_probs1 <- function(item,
@@ -263,7 +259,6 @@ determine_mupp_probs1 <- function(item,
     } # END if STATEMENT
 
     picked_order <- item[[picked_order_name]]
-
   } # END if STATEMENT
 
   # calculate probability
@@ -273,7 +268,6 @@ determine_mupp_probs1 <- function(item,
                             picked_order_id = picked_order)
 
   return(probs)
-
 } # END determine_mupp_probs1 FUNCTION
 
 # simulate MUPP responses (to one/multiple items)
@@ -282,7 +276,6 @@ simulate_mupp_resp_ <- function(probs){
   # simulating responses
   lapply(probs,
          FUN = simulate_mupp_resp1)
-
 } # END simulate_mupp_resp_ FUNCTION
 
 #' @importFrom stats
@@ -299,5 +292,4 @@ simulate_mupp_resp1 <- function(probs){
   u     <- runif(n = nrow(probs))
 
   rowSums(u >= probs) + 1
-
 } # END simulate_mupp_resp FUNCTION

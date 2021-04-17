@@ -134,7 +134,6 @@ estimate_mupp_params_mcmc_ <- function(mcmc_envir,
                                                 args = list(mcmc_envir = mcmc_envir))
     } # END if STATEMENT
   } # END for params LOOP
-
 } # END estimate_mupp_params_mcmc_
 
 # INDIVIDUAL UPDATE FUNCTIONS #
@@ -183,7 +182,6 @@ update_mupp_thetas_mcmc <- function(mcmc_envir){
 
   # return
   return(thetas_old)
-
 } # END update_mupp_thetas_mcmc FUNCTION
 
 # ALL PARAMS #
@@ -251,7 +249,6 @@ update_mupp_params_mcmc <- function(mcmc_envir,
 
   # return
   return(params_old)
-
 } # END update_mupp_params_mcmc FUNCTION
 
 # ALPHA/DELTA/TAU #
@@ -285,7 +282,6 @@ fix_param_names <- function(x){
   } # END if STATEMENT
 
   return(x)
-
 } # END fix_param_names FUNCTION
 
 
@@ -329,7 +325,6 @@ initialize_mupp_params_mcmc <- function(resp, items,
               alpha = alpha,
               delta = delta,
               tau   = tau))
-
 } # END initialize_mupp_params_mcmc FUNCTION
 
 # HELPER FUNCTIONS #
@@ -355,7 +350,6 @@ loglik_mupp_rank_mcmc <- function(thetas,
                         params = cbind(alpha, delta, tau),
                         items  = items,
                         picked_orders = resp)
-
 } # END loglik_mupp_rank_mcmc FUNCTION
 
 # determine whether to update the MCMC algorithm
@@ -380,5 +374,4 @@ update_with_metrop <- function(values_old,
   accept      <- u < p
 
   return(accept)
-
 } # END update_with_metrop FUNCTION

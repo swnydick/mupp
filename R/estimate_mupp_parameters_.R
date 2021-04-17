@@ -77,7 +77,8 @@
 #' cor(items$tau,   est_params$mean$tau)
 #' }
 #'
-#' @importFrom kfhelperfuns arrange_by_vars "%ni%"
+#' @importFrom roperators
+#'             "%ni%"
 #' @importFrom magrittr "%>%" "%<>%" set_rownames
 #' @importFrom data.table dcast as.data.table
 #' @export
@@ -102,5 +103,4 @@ estimate_mupp_params <- function(resp,
 
   # return
   return(out)
-
 } # END estimate_mupp_params FUNCTION

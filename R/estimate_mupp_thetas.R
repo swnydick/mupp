@@ -92,8 +92,8 @@
 #' diag(cor(est_thetas_mle$estimates, est_thetas_mcmc$estimates))
 #' }
 #'
-#' @importFrom kfhelperfuns
-#'             arrange_by_vars "%ni%"
+#' @importFrom roperators
+#'             "%ni%"
 #' @importFrom magrittr
 #'             "%>%" "%<>%" set_rownames multiply_by
 #' @importFrom data.table
@@ -126,7 +126,6 @@ estimate_mupp_thetas <- function(resp,
 
   # return
   return(out)
-
 } # END estimate_mupp_thetas FUNCTION
 
 
@@ -231,7 +230,6 @@ estimate_mupp_thetas_mle <- function(resp,
               hessian   = hessian,
               loglik    = loglik,
               iters     = iters))
-
 } # END estimate_mupp_thetas_mle FUNCTION
 
 
@@ -255,5 +253,4 @@ estimate_mupp_thetas_mcmc <- function(resp,
 
 
   return(out)
-
 } # END estimate_mupp_thetas_mcmc FUNCTION
