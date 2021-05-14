@@ -17,10 +17,12 @@ Imports:
     lhs (>= 0.16),
     magrittr (>= 1.5),
     Rcpp (>= 0.12.16),
-    roperators (>= 1.1.0)
+    roperators (>= 1.1.0),
+    lifecycle
 Suggests: 
     ggplot2 (>= 2.2.1),
     knitr (>= 1.20),
+    markdown (>= 1.1),
     numDeriv (>= 2016.8.1),
     rmarkdown (>= 1.9),
     testthat (>= 2.0.0),
@@ -32,3 +34,4 @@ ByteCompile: true
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+Roxygen: list(markdown = TRUE)

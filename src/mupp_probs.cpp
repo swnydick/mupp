@@ -26,7 +26,7 @@ List saved_permutations = List::create(find_all_permutations(1),
 // extract save permutation (if we have it stored)
 IntegerMatrix extract_permutations(int n,
                                    int init = 0){
-  if(n < saved_permutations.size() & init == 0){
+  if((n < saved_permutations.size()) & (init == 0)){
     return saved_permutations[n - 1];
   } else{
     return find_all_permutations(n, init);
@@ -69,7 +69,7 @@ NumericVector p_mupp_pick0(const NumericMatrix & Q,
   }
 
   // protection for really rare events
-  LogicalVector flags = probs == 0 | probs == 1;
+  LogicalVector flags = (probs == 0) | (probs == 1);
 
   if(is_true(any(flags))){
     probs[probs == 0] = 0 + 1e-09;
@@ -139,7 +139,7 @@ NumericVector p_mupp_rank1(const NumericMatrix & Q,
   }
 
   // protection for really rare events
-  LogicalVector flags = probs == 0 | probs == 1;
+  LogicalVector flags = (probs == 0) | (probs == 1);
 
   if(is_true(any(flags))){
     probs[probs == 0] = 0 + 1e-09;

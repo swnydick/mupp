@@ -109,7 +109,7 @@ int find_crossprod_column(int dim1,
   //  - if dim1 > dim2, swap!
   //  - if dim1 or dim2 < 0, bad!
   //  - if dim1 = dim2, return the element of the diagonal
-  if(dim1 < 0 | dim2 < 0){
+  if((dim1 < 0) | (dim2 < 0)){
     stop("dim1 and dim2 must greater than init");
   } else if(dim1 > dim2){
     int dim3 = dim1;

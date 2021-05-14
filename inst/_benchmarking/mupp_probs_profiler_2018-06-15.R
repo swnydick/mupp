@@ -24,12 +24,7 @@ resp   <- spread(resp_sim$resp[c("person", "item", "resp")],
 
 # now profile code
 
-# a. likelihood
-mupp:::start_profiler("/Users/nydicks/Desktop/mupp_profile.out")
-mupp:::loglik_mupp_rank_impl(thetas, params, items, resp)
-mupp:::stop_profiler()
-
-# b. likelihood vs probability
+# a. likelihood vs probability
 items_1  <- items[items[ , 1] == 1, ]
 params_1 <- params[1:2, ]
 resp_1   <- resp[ , 1, drop = FALSE]

@@ -5,27 +5,6 @@
 
 using namespace Rcpp;
 
-// start_profiler
-SEXP start_profiler(SEXP str);
-RcppExport SEXP _mupp_start_profiler(SEXP strSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type str(strSEXP);
-    rcpp_result_gen = Rcpp::wrap(start_profiler(str));
-    return rcpp_result_gen;
-END_RCPP
-}
-// stop_profiler
-SEXP stop_profiler();
-RcppExport SEXP _mupp_stop_profiler() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(stop_profiler());
-    return rcpp_result_gen;
-END_RCPP
-}
 // find_all_permutations
 IntegerMatrix find_all_permutations(int n, int init);
 RcppExport SEXP _mupp_find_all_permutations(SEXP nSEXP, SEXP initSEXP) {
@@ -151,8 +130,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_mupp_start_profiler", (DL_FUNC) &_mupp_start_profiler, 1},
-    {"_mupp_stop_profiler", (DL_FUNC) &_mupp_stop_profiler, 0},
     {"_mupp_find_all_permutations", (DL_FUNC) &_mupp_find_all_permutations, 2},
     {"_mupp_find_crossprod_column", (DL_FUNC) &_mupp_find_crossprod_column, 4},
     {"_mupp_find_crossprod_dims", (DL_FUNC) &_mupp_find_crossprod_dims, 3},

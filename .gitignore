@@ -102,3 +102,4 @@ vignettes/*.pdf
 *.so
 *.dll
 inst/doc
+docs

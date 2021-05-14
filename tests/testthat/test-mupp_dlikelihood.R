@@ -2,6 +2,8 @@ context("test-mupp_dlikelihood.R")
 
 test_that("mupp likelihood derivatives work", {
 
+  set.seed(872934)
+
   # 0 # R functions to calculate likelihoods
 
   # turn parameters into useful objects for MUPP
