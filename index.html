@@ -78,16 +78,23 @@
 <div id="mupp" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#mupp" class="anchor"></a>mupp</h1></div>
+<!-- badges: start -->
+
 <div id="an-r-packages-for-the-multi-unidimensional-pairwise-preference-model" class="section level3">
 <h3 class="hasAnchor">
 <a href="#an-r-packages-for-the-multi-unidimensional-pairwise-preference-model" class="anchor"></a>An R Packages for the Multi-Unidimensional Pairwise Preference Model</h3>
 <p>The mupp package contains functions designed to simulation data that represent the GGUM-based MUPP model with corresponding MCMC and EM estimation algorithms. Note that estimation for the MUPP model is assumed to currently be joint estimation of GGUM parameters in a MUPP framework (which could be problematic and lead to some measurement error). Currently, there are no options for fixing initial item parameter estimates or treating items as pretest items, but these functionalities might come in the future.</p>
+</div>
+<div id="installation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#installation" class="anchor"></a>Installation</h2>
 <p>Within an R session, type the following to install the most current (development) source package from github</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va">devtools</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
-  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
-<span class="op">}</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"swnydick/mupp"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"swnydick/mupp"</span><span class="op">)</span></code></pre></div>
+</div>
+<div id="help" class="section level2">
+<h2 class="hasAnchor">
+<a href="#help" class="anchor"></a>Help</h2>
 <p>Take a look at the help pages for <code>simulate_mupp_parameters</code>, <code>simulate_mupp_responses</code>, <code>estimate_mupp_parameters</code>, and <code>estimate_mupp_thetas</code> to get started.</p>
 </div>
 </div>
@@ -108,7 +115,14 @@
 </ul>
 </div>
 
-  </div>
+  <div class="dev-status">
+<h2>Dev status</h2>
+<ul class="list-unstyled">
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://github.com/swnydick/mupp/actions"><img src="https://github.com/swnydick/mupp/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
+</ul>
+</div>
+</div>
 </div>
 
 
