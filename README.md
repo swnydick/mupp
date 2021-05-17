@@ -8,6 +8,8 @@
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/swnydick/mupp/workflows/R-CMD-check/badge.svg)](https://github.com/swnydick/mupp/actions)
+[![Codecov test
+coverage](https://codecov.io/gh/swnydick/mupp/branch/master/graph/badge.svg)](https://codecov.io/gh/swnydick/mupp?branch=master)
 <!-- badges: end -->
 
 ### An R Packages for the Multi-Unidimensional Pairwise Preference Model

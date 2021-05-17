@@ -26,7 +26,8 @@ Suggests:
     numDeriv (>= 2016.8.1),
     rmarkdown (>= 1.9),
     testthat (>= 2.0.0),
-    tidyr (>= 0.8.0)
+    tidyr (>= 0.8.0),
+    covr
 LinkingTo: 
     Rcpp (>= 0.12.16)
 VignetteBuilder: knitr
