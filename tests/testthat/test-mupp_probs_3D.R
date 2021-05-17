@@ -2,6 +2,8 @@ context("test-mupp_probs_3D.R")
 
 test_that("mupp probabilities work: three dimensions", {
 
+  set.seed(9872345)
+
   # 0 # Misc Objects
   dims      <- 1:3
   n_dims    <- length(dims)

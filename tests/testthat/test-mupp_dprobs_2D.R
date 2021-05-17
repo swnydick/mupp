@@ -2,6 +2,8 @@ context("test-mupp_dprobs_2D.R")
 
 test_that("mupp probability derivatives work: two dimensions", {
 
+  set.seed(8234523)
+
   # 0 # Misc Objects
   dims   <- 1:2
   n_dims <- length(dims)

@@ -2,6 +2,8 @@ context("test-simulate_mupp.R")
 
 test_that("mupp response conversion works", {
 
+  set.seed(897345)
+
   # a # guaranteed responses
 
   # one person

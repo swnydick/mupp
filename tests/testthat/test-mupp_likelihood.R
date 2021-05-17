@@ -2,6 +2,8 @@ context("test-mupp_likelihood.R")
 
 test_that("mupp likelihoods work", {
 
+  set.seed(243534)
+
   # 0 # R functions to calculate likelihoods
 
   # turn parameters into useful objects for MUPP
