@@ -142,11 +142,11 @@ item properties.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>resp</th>
-      <td><p>a data.frame of (at least) [person, item, resp]</p></td>
+      <td><p>a data.frame of (at least) <code>[person, item, resp]</code></p></td>
     </tr>
     <tr>
       <th>items</th>
-      <td><p>a data.frame of (at least) [item, statement, dim, alpha, delta, tau]</p></td>
+      <td><p>a data.frame of (at least) <code>[item, statement, dim, alpha, delta, tau]</code></p></td>
     </tr>
     <tr>
       <th>method</th>
@@ -164,28 +164,30 @@ item properties.</p>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a list of [estimates, vars, hessian, loglik, iters] for MLE estimation
-        or [estimates, sds] for MCMC estimation</p>
+    <p>a list of <code>[estimates, vars, hessian, loglik, iters]</code> for MLE estimation
+or <code>[estimates, sds]</code> for MCMC estimation</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>Method BFGS uses a modified BFGS algorithm, based on Li and Fukushima (2001),
-         which includes modifications of the BFGS estimated hessian with demonstrated
-         global convergence properties.</p>
+which includes modifications of the BFGS estimated hessian with demonstrated
+global convergence properties.</p>
 <ul>
-<li><p>For BFGS, control parameters include    <dl>
-      <dt>eps</dt><dd><p>convergence criterion, will converge if
-                 length of gradient is shorter than this value. Defaults
-                 to 1e-07.</p></dd>
-      <dt>max_iters</dt><dd><p>maximum number of iterations before convergence. Defaults
-                       to 100.</p></dd>
-      <dt>n_starts</dt><dd><p>number of random starts at different theta vectors (using
-                      latin hypercube samples. Defaults to 4.)</p></dd></dl></p></li>
-<li><p>For MCMC, control parameters include    <dl>
-      <dt>n_iters</dt><dd><p>total number of iterations.</p></dd>
-      <dt>n_burnin</dt><dd><p>number of iterations to throw away when calculating
-                      summary statistics.</p></dd>
-      <dt>step_size_sd</dt><dd><p>the standard deviation of the step size for subsequent
-                          Metropolis-Hastings draws.</p></dd></dl></p></li>
+<li><p>For BFGS, control parameters include
+<dl>
+<dt>eps</dt><dd><p>convergence criterion, will converge if
+length of gradient is shorter than this value. Defaults
+to 1e-07.</p></dd>
+<dt>max_iters</dt><dd><p>maximum number of iterations before convergence. Defaults
+to 100.</p></dd>
+<dt>n_starts</dt><dd><p>number of random starts at different theta vectors (using
+latin hypercube samples. Defaults to 4.)</p></dd></dl></p></li>
+<li><p>For MCMC, control parameters include
+<dl>
+<dt>n_iters</dt><dd><p>total number of iterations.</p></dd>
+<dt>n_burnin</dt><dd><p>number of iterations to throw away when calculating
+summary statistics.</p></dd>
+<dt>step_size_sd</dt><dd><p>the standard deviation of the step size for subsequent
+Metropolis-Hastings draws.</p></dd></dl></p></li>
 </ul>
 
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
@@ -193,8 +195,8 @@ item properties.</p>
     
 <ul>
 <li><p>Li &amp; Dong-Hui (2001). A modified BFGS method and its global
-        convergence in nonconvex minimization. Journal of Computational and
-        Applied Mathematics, 129, 15-35.</p></li>
+convergence in nonconvex minimization. Journal of Computational and
+Applied Mathematics, 129, 15-35.</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>

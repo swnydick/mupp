@@ -159,13 +159,14 @@ of integers included in the permutation. See Details.</p></td>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p><code>init</code> is useful for indexing C vs R code. If <code>init = 0</code>,
-         then the indices will work with 0 indexed languages, such as C or
-         Python. If <code>init = 1</code>, then the indices will work with 1 indexed
-         languages, such as R.</p>
-<p>This function assumes that the first n_dims columns are the dims,
-         the next n_dims - 1 columns are the cross-products of dimension 1 with
-         the remaining dims, the next n_dims - 2 columns are the cross-products
-         of dimension 2 with the remaining dims &gt; 2, etc.</p>
+then the indices will work with 0 indexed languages, such as C or
+Python. If <code>init = 1</code>, then the indices will work with 1 indexed
+languages, such as R.</p><pre>     This function assumes that the first n_dims columns are the dims,
+     the next n_dims - 1 columns are the cross-products of dimension 1 with
+     the remaining dims, the next n_dims - 2 columns are the cross-products
+     of dimension 2 with the remaining dims &gt; 2, etc.
+</pre>
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='find_crossprod_dims.html'>find_crossprod_dims</a></code></p></div>

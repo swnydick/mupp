@@ -136,11 +136,11 @@ properties using MCMC</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>resp</th>
-      <td><p>a data.frame of (at least) [person, item, resp]</p></td>
+      <td><p>a data.frame of (at least) <code>[person, item, resp]</code></p></td>
     </tr>
     <tr>
       <th>items</th>
-      <td><p>a data.frame of (at least) [item, statement, dim]</p></td>
+      <td><p>a data.frame of (at least) <code>[item, statement, dim]</code></p></td>
     </tr>
     <tr>
       <th>method</th>
@@ -158,29 +158,30 @@ properties using MCMC</p>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a list of [theta, params] arrays with the third dimension indicating
-        the iteration as well as means and sds</p>
+    <p>a list of <code>[theta, params]</code> arrays with the third dimension indicating
+the iteration as well as means and sds</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     
 <ul>
 <li><p>For MCMC, additional parameters include
-    <dl>
-      <dt>initial_params</dt><dd><p>a named list with names indicating the parameter
-                            and values indicating the starting values/initial
-                            parameter estimates</p></dd>
-      <dt>fixed_params</dt><dd><p>a character vector with elements that are fixed
-                          to their initial parameters for the entire estimation
-                          algorithm</p></dd></dl></p></li>
+<dl>
+<dt>initial_params</dt><dd><p>a named list with names indicating the parameter
+and values indicating the starting values/initial
+parameter estimates</p></dd>
+<dt>fixed_params</dt><dd><p>a character vector with elements that are fixed
+to their initial parameters for the entire estimation
+algorithm</p></dd></dl></p></li>
 </ul>
 
 <ul>
-<li><p>For MCMC, control parameters include    <dl>
-      <dt>n_iters</dt><dd><p>total number of iterations.</p></dd>
-      <dt>n_burnin</dt><dd><p>number of iterations to throw away when calculating
-                      summary statistics.</p></dd>
-      <dt>step_size_sd</dt><dd><p>the standard deviation of the step size for subsequent
-                          Metropolis-Hastings draws.</p></dd></dl></p></li>
+<li><p>For MCMC, control parameters include
+<dl>
+<dt>n_iters</dt><dd><p>total number of iterations.</p></dd>
+<dt>n_burnin</dt><dd><p>number of iterations to throw away when calculating
+summary statistics.</p></dd>
+<dt>step_size_sd</dt><dd><p>the standard deviation of the step size for subsequent
+Metropolis-Hastings draws.</p></dd></dl></p></li>
 </ul>
 
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
