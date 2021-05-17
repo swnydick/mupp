@@ -119,11 +119,11 @@ simulate_mupp_params <- function(n_persons     = 1,
 #' Generate responses that can be used for the MUPP model.
 #'
 #' @param persons persons data.frame with column names
-#'        [person, dim, theta]
+#'        `[person, dim, theta]`
 #' @param items items data.frame with column names
-#'        [item, statement, dim, alpha, delta, tau]
+#'        `[item, statement, dim, alpha, delta, tau]`
 #'
-#' @return a data.frame of [person x item x response pattern]
+#' @return a data.frame of `[person x item x response pattern]`
 #'
 #' @details The persons and items df needs to look identical to that coming from
 #'          \code{\link{simulate_mupp_params}} or else this function will not work.

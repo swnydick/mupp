@@ -3,14 +3,14 @@
 #' Estimate MUPP person parameters given item responses, item parameters, and
 #' item properties.
 #'
-#' @param resp a data.frame of (at least) [person, item, resp]
-#' @param items a data.frame of (at least) [item, statement, dim, alpha, delta, tau]
+#' @param resp a data.frame of (at least) `[person, item, resp]`
+#' @param items a data.frame of (at least) `[item, statement, dim, alpha, delta, tau]`
 #' @param method the estimation method ("bfgs", "MCMC")
 #' @param control a list of parameters to control the algorithm. See details.
 #' @param ... other parameters to pass to the method
 #'
-#' @return a list of [estimates, vars, hessian, loglik, iters] for MLE estimation
-#'         or [estimates, sds] for MCMC estimation
+#' @return a list of `[estimates, vars, hessian, loglik, iters]` for MLE estimation
+#'         or `[estimates, sds]` for MCMC estimation
 #'
 #' @details Method BFGS uses a modified BFGS algorithm, based on Li and Fukushima (2001),
 #'          which includes modifications of the BFGS estimated hessian with demonstrated
@@ -18,7 +18,6 @@
 #'
 #' \itemize{
 #'   \item{For BFGS, control parameters include
-#'
 #'     \describe{
 #'       \item{eps}{convergence criterion, will converge if
 #'                  length of gradient is shorter than this value. Defaults
@@ -31,7 +30,6 @@
 #'   }
 #'
 #'   \item{For MCMC, control parameters include
-#'
 #'     \describe{
 #'       \item{n_iters}{total number of iterations.}
 #'       \item{n_burnin}{number of iterations to throw away when calculating

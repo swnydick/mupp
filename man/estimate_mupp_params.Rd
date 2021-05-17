@@ -7,9 +7,9 @@
 estimate_mupp_params(resp, items, method = "MCMC", control = list(), ...)
 }
 \arguments{
-\item{resp}{a data.frame of (at least) [person, item, resp]}
+\item{resp}{a data.frame of (at least) \verb{[person, item, resp]}}
 
-\item{items}{a data.frame of (at least) [item, statement, dim]}
+\item{items}{a data.frame of (at least) \verb{[item, statement, dim]}}
 
 \item{method}{the estimation method (MCMC is the only one that works now)}
 
@@ -18,8 +18,8 @@ estimate_mupp_params(resp, items, method = "MCMC", control = list(), ...)
 \item{...}{other parameters to pass to the estimation algorithm. See details.}
 }
 \value{
-a list of [theta, params] arrays with the third dimension indicating
-        the iteration as well as means and sds
+a list of \verb{[theta, params]} arrays with the third dimension indicating
+the iteration as well as means and sds
 }
 \description{
 Estimate MUPP statement and person parameters given item responses and item
@@ -27,29 +27,28 @@ properties using MCMC
 }
 \details{
 \itemize{
-  \item{For MCMC, additional parameters include
-    \describe{
-      \item{initial_params}{a named list with names indicating the parameter
-                            and values indicating the starting values/initial
-                            parameter estimates}
-      \item{fixed_params}{a character vector with elements that are fixed
-                          to their initial parameters for the entire estimation
-                          algorithm}
-    }
-  }
+\item{For MCMC, additional parameters include
+\describe{
+\item{initial_params}{a named list with names indicating the parameter
+and values indicating the starting values/initial
+parameter estimates}
+\item{fixed_params}{a character vector with elements that are fixed
+to their initial parameters for the entire estimation
+algorithm}
+}
+}
 }
 
 \itemize{
-  \item{For MCMC, control parameters include
-
-    \describe{
-      \item{n_iters}{total number of iterations.}
-      \item{n_burnin}{number of iterations to throw away when calculating
-                      summary statistics.}
-      \item{step_size_sd}{the standard deviation of the step size for subsequent
-                          Metropolis-Hastings draws.}
-    }
-  }
+\item{For MCMC, control parameters include
+\describe{
+\item{n_iters}{total number of iterations.}
+\item{n_burnin}{number of iterations to throw away when calculating
+summary statistics.}
+\item{step_size_sd}{the standard deviation of the step size for subsequent
+Metropolis-Hastings draws.}
+}
+}
 }
 }
 \examples{

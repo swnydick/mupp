@@ -13,9 +13,9 @@ estimate_mupp_thetas(
 )
 }
 \arguments{
-\item{resp}{a data.frame of (at least) [person, item, resp]}
+\item{resp}{a data.frame of (at least) \verb{[person, item, resp]}}
 
-\item{items}{a data.frame of (at least) [item, statement, dim, alpha, delta, tau]}
+\item{items}{a data.frame of (at least) \verb{[item, statement, dim, alpha, delta, tau]}}
 
 \item{method}{the estimation method ("bfgs", "MCMC")}
 
@@ -24,8 +24,8 @@ estimate_mupp_thetas(
 \item{...}{other parameters to pass to the method}
 }
 \value{
-a list of [estimates, vars, hessian, loglik, iters] for MLE estimation
-        or [estimates, sds] for MCMC estimation
+a list of \verb{[estimates, vars, hessian, loglik, iters]} for MLE estimation
+or \verb{[estimates, sds]} for MCMC estimation
 }
 \description{
 Estimate MUPP person parameters given item responses, item parameters, and
@@ -33,33 +33,31 @@ item properties.
 }
 \details{
 Method BFGS uses a modified BFGS algorithm, based on Li and Fukushima (2001),
-         which includes modifications of the BFGS estimated hessian with demonstrated
-         global convergence properties.
+which includes modifications of the BFGS estimated hessian with demonstrated
+global convergence properties.
 
 \itemize{
-  \item{For BFGS, control parameters include
+\item{For BFGS, control parameters include
+\describe{
+\item{eps}{convergence criterion, will converge if
+length of gradient is shorter than this value. Defaults
+to 1e-07.}
+\item{max_iters}{maximum number of iterations before convergence. Defaults
+to 100.}
+\item{n_starts}{number of random starts at different theta vectors (using
+latin hypercube samples. Defaults to 4.)}
+}
+}
 
-    \describe{
-      \item{eps}{convergence criterion, will converge if
-                 length of gradient is shorter than this value. Defaults
-                 to 1e-07.}
-      \item{max_iters}{maximum number of iterations before convergence. Defaults
-                       to 100.}
-      \item{n_starts}{number of random starts at different theta vectors (using
-                      latin hypercube samples. Defaults to 4.)}
-    }
-  }
-
-  \item{For MCMC, control parameters include
-
-    \describe{
-      \item{n_iters}{total number of iterations.}
-      \item{n_burnin}{number of iterations to throw away when calculating
-                      summary statistics.}
-      \item{step_size_sd}{the standard deviation of the step size for subsequent
-                          Metropolis-Hastings draws.}
-    }
-  }
+\item{For MCMC, control parameters include
+\describe{
+\item{n_iters}{total number of iterations.}
+\item{n_burnin}{number of iterations to throw away when calculating
+summary statistics.}
+\item{step_size_sd}{the standard deviation of the step size for subsequent
+Metropolis-Hastings draws.}
+}
+}
 }
 }
 \examples{
@@ -104,9 +102,9 @@ diag(cor(est_thetas_mle$estimates, est_thetas_mcmc$estimates))
 }
 \references{
 \itemize{
-  \item{Li & Dong-Hui (2001). A modified BFGS method and its global
-        convergence in nonconvex minimization. Journal of Computational and
-        Applied Mathematics, 129, 15-35.}
+\item{Li & Dong-Hui (2001). A modified BFGS method and its global
+convergence in nonconvex minimization. Journal of Computational and
+Applied Mathematics, 129, 15-35.}
 }
 }
 \seealso{

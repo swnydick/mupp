@@ -3,13 +3,13 @@
 #' Estimate MUPP statement and person parameters given item responses and item
 #' properties using MCMC
 #'
-#' @param resp a data.frame of (at least) [person, item, resp]
-#' @param items a data.frame of (at least) [item, statement, dim]
+#' @param resp a data.frame of (at least) `[person, item, resp]`
+#' @param items a data.frame of (at least) `[item, statement, dim]`
 #' @param method the estimation method (MCMC is the only one that works now)
 #' @param control a list of parameters to control the algorithm. See details.
 #' @param ... other parameters to pass to the estimation algorithm. See details.
 #'
-#' @return a list of [theta, params] arrays with the third dimension indicating
+#' @return a list of `[theta, params]` arrays with the third dimension indicating
 #'         the iteration as well as means and sds
 #'
 #' @details
@@ -29,7 +29,6 @@
 #'
 #' \itemize{
 #'   \item{For MCMC, control parameters include
-#'
 #'     \describe{
 #'       \item{n_iters}{total number of iterations.}
 #'       \item{n_burnin}{number of iterations to throw away when calculating

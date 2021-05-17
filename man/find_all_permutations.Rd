@@ -21,9 +21,9 @@ that vector.
 }
 \details{
 \code{init} is useful for indexing C vs R code. If \code{init = 0},
-         then the indices will work with 0 indexed languages, such as C or
-         Python. If \code{init = 1}, then the indices will work with 1 indexed
-         languages, such as R.
+then the indices will work with 0 indexed languages, such as C or
+Python. If \code{init = 1}, then the indices will work with 1 indexed
+languages, such as R.
 }
 \author{
 Steven Nydick, \email{steven.nydick@kornferry.com}

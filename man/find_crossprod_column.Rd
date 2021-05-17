@@ -25,14 +25,13 @@ indexing the appropriate cross-product.
 }
 \details{
 \code{init} is useful for indexing C vs R code. If \code{init = 0},
-         then the indices will work with 0 indexed languages, such as C or
-         Python. If \code{init = 1}, then the indices will work with 1 indexed
-         languages, such as R.
-
-         This function assumes that the first n_dims columns are the dims,
-         the next n_dims - 1 columns are the cross-products of dimension 1 with
-         the remaining dims, the next n_dims - 2 columns are the cross-products
-         of dimension 2 with the remaining dims > 2, etc.
+then the indices will work with 0 indexed languages, such as C or
+Python. If \code{init = 1}, then the indices will work with 1 indexed
+languages, such as R.\preformatted{     This function assumes that the first n_dims columns are the dims,
+     the next n_dims - 1 columns are the cross-products of dimension 1 with
+     the remaining dims, the next n_dims - 2 columns are the cross-products
+     of dimension 2 with the remaining dims > 2, etc.
+}
 }
 \seealso{
 \code{\link{find_crossprod_dims}}

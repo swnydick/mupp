@@ -26,15 +26,15 @@ single dimension or must load on multiple dimensions}
 }
 \value{
 a list with items/persons that conform to the MUPP model, as expected
-        in package functions
+in package functions
 }
 \description{
 Generate parameters/thetas that conform to the MUPP model.
 }
 \details{
 For the purposes of parameter generation, each item will be assumed
-         to have between 2 and n_dims dimensions, where the number of dimensions
-         for an item is randomly generated from a discrete uniform distribution.
+to have between 2 and n_dims dimensions, where the number of dimensions
+for an item is randomly generated from a discrete uniform distribution.
 }
 \author{
 Steven Nydick, \email{steven.nydick@kornferry.com}
