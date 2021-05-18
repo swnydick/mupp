@@ -37,3 +37,6 @@ devtools::install_github("swnydick/mupp")
 Take a look at the help pages for `simulate_mupp_parameters`,
 `simulate_mupp_responses`, `estimate_mupp_parameters`, and
 `estimate_mupp_thetas` to get started.
+
+The package homepage is currently located
+[here](https://swnydick.github.io/mupp/index.html).

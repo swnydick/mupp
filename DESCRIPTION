@@ -1,14 +1,16 @@
 Package: mupp
 Title: Multi-Unidimensional Pairwise Preference (MUPP) IRT Model
-Version: 0.1.0.9000
+Version: 0.0.2
 Authors@R: c(person(given   = "Steven",
                     family  = "Nydick",
                     email   = "swnydick@gmail.com",
-                    role    = c("aut", "cre"),
+                    role    = c("cre", "aut"),
                     comment = c(ORCID = "0000-0002-2908-1188")))
 Description: Probability functions to describe the MUPP model, simulate responses
  to the MUPP model, and estimate parameters of the MUPP model.
 License: MIT + file LICENSE
+URL: https://swnydick.github.io/mupp/index.html,
+     https://github.com/swnydick/mupp
 Depends: 
     R (>= 3.4.0)
 Imports: 

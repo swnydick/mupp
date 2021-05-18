@@ -22,6 +22,8 @@ a list of \verb{[theta, params]} arrays with the third dimension indicating
 the iteration as well as means and sds
 }
 \description{
+\Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
+
 Estimate MUPP statement and person parameters given item responses and item
 properties using MCMC
 }

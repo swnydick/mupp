@@ -1,7 +1,11 @@
 #' Estimate MUPP Parameters
 #'
+#' @description
+#' \Sexpr[results=rd, stage=render]{lifecycle::badge("experimental")}
+#'
 #' Estimate MUPP statement and person parameters given item responses and item
 #' properties using MCMC
+#'
 #'
 #' @param resp a data.frame of (at least) `[person, item, resp]`
 #' @param items a data.frame of (at least) `[item, statement, dim]`
