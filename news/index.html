@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">mupp</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.2</span>
       </span>
     </div>
 
@@ -103,7 +103,12 @@
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/swnydick/mupp/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -118,21 +123,28 @@
   <div class="col-md-9 contents">
     <div class="page-header">
       <h1 data-toc-skip>Changelog <small></small></h1>
-      
+      <small>Source: <a href='https://github.com/swnydick/mupp/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="mupp-0109000" class="section level1">
-<h1 class="page-header" data-toc-text="0.1.0.9000">
-<a href="#mupp-0109000" class="anchor"></a>mupp 0.1.0.9000</h1>
+    <div id="mupp-002" class="section level1">
+<h1 class="page-header" data-toc-text="0.0.2">
+<a href="#mupp-002" class="anchor"></a>mupp 0.0.2</h1>
 <ul>
-<li>Updated package infrastructure, fixed test cases, and fixed some style issues.</li>
+<li>Updated LICENSE to MIT to make publishing on Github/CRAN easier in the long run.</li>
+<li>Updated infrastructure to: 1) add Github workflows for “check-release”, “pkgdown”, and “test-coverage”; 2) add lifecycle stages for the overall package; 3) add code coverage; and 4) include badgets for CRAN check, lifecycle, and code coverage.</li>
+<li>Fixed overall documentation and standardized package documentation.</li>
+<li>Fixed test cases by adding seeds to reduce random noise, and fixed some style issues.</li>
+<li>
+<code>cpp_profiler_tools.cpp</code> removed due to compilation issues on remote systems.</li>
 </ul>
 </div>
-    <div id="mupp-0009000" class="section level1">
-<h1 class="page-header" data-toc-text="0.0.0.9000">
-<a href="#mupp-0009000" class="anchor"></a>mupp 0.0.0.9000</h1>
+    <div id="mupp-001" class="section level1">
+<h1 class="page-header" data-toc-text="0.0.1">
+<a href="#mupp-001" class="anchor"></a>mupp 0.0.1</h1>
 <ul>
-<li>Added a <code>NEWS.md</code> file to track changes to the package.</li>
+<li>Created functions that simulate responses to the MUPP model, estimate item parameters (without constraining any parameters and always using MCMC), and estimating person parameters (using either MCMC or EM with BFGS).</li>
+<li>Added C++ functions (using Rcpp) to generate MUPP/GGUM probabilities, likelihoods, and corresponding second derivatives.</li>
+<li>Added a test case suite to check simulations and probabilities and ensure that they never change with package updates.</li>
 </ul>
 </div>
   </div>
