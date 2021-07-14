@@ -9,6 +9,10 @@
 #' @param n an integer greater than 0
 #' @param init an integer indicating the initial starting value for the set
 #'        of integers included in the permutation. See Details.
+#' @param index an integer between 1 and n indication which permutation to
+#'        select (using R indexing rather than C indexing)
+#' @param order an integer vector indicating the response/permutation order
+#'        that should be checked against
 #'
 #' @return A matrix of size n! x n, where each row is a unique permutation
 #'
@@ -18,10 +22,25 @@
 #'          languages, such as R.
 #'
 #' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
-#'
+#' @name permutation
+NULL
+
+#' @rdname permutation
 #' @export
 find_all_permutations <- function(n, init = 0L) {
     .Call(`_mupp_find_all_permutations`, n, init)
+}
+
+#' @rdname permutation
+#' @export
+find_permutation_order <- function(n, index = 1L, init = 0L) {
+    .Call(`_mupp_find_permutation_order`, n, index, init)
+}
+
+#' @rdname permutation
+#' @export
+find_permutation_index <- function(order) {
+    .Call(`_mupp_find_permutation_index`, order)
 }
 
 #' Find Column for Cross-Product

@@ -4,7 +4,10 @@
 #include <Rcpp.h>
 Rcpp::IntegerMatrix find_all_permutations(int n, int init = 0);
 
+Rcpp::IntegerMatrix extract_permutations(int n, int init = 0);
+
 int find_crossprod_column(int dim1, int dim2, int n_dims, int init = 0);
+
 Rcpp::NumericVector find_crossprod_dims(int dim12, int n_dims, int init = 0);
 
 Rcpp::NumericMatrix select_cols(const Rcpp::NumericMatrix & X,

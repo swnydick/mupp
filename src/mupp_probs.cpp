@@ -15,24 +15,6 @@
 #include "ggum_probs.h"
 using namespace Rcpp;
 
-// saved permutations (so we don't have to recreate this all of the time)
-List saved_permutations = List::create(find_all_permutations(1),
-                                       find_all_permutations(2),
-                                       find_all_permutations(3),
-                                       find_all_permutations(4),
-                                       find_all_permutations(5),
-                                       find_all_permutations(6));
-
-// extract save permutation (if we have it stored)
-IntegerMatrix extract_permutations(int n,
-                                   int init = 0){
-  if((n < saved_permutations.size()) & (init == 0)){
-    return saved_permutations[n - 1];
-  } else{
-    return find_all_permutations(n, init);
-  }
-}
-
 /* MUPP PROBABILITY STUFF
  *   - p_mupp_pick0     - numerator (individual component) of PICK probability
  *   - p_mupp_pick1     - OVERALL PICK probability
@@ -42,7 +24,6 @@ IntegerMatrix extract_permutations(int n,
  *   - pder1_mupp_rank_impl - DERIVATIVES for an individual order OR all possible
  *                            combinations
  */
-
 NumericVector p_mupp_pick0(const NumericMatrix & Q,
                            const int picked_dim = 1) {
 

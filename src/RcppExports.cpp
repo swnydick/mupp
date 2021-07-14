@@ -17,6 +17,30 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// find_permutation_order
+IntegerVector find_permutation_order(int n, int index, int init);
+RcppExport SEXP _mupp_find_permutation_order(SEXP nSEXP, SEXP indexSEXP, SEXP initSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type index(indexSEXP);
+    Rcpp::traits::input_parameter< int >::type init(initSEXP);
+    rcpp_result_gen = Rcpp::wrap(find_permutation_order(n, index, init));
+    return rcpp_result_gen;
+END_RCPP
+}
+// find_permutation_index
+IntegerVector find_permutation_index(IntegerVector order);
+RcppExport SEXP _mupp_find_permutation_index(SEXP orderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type order(orderSEXP);
+    rcpp_result_gen = Rcpp::wrap(find_permutation_index(order));
+    return rcpp_result_gen;
+END_RCPP
+}
 // find_crossprod_column
 int find_crossprod_column(int dim1, int dim2, int n_dims, int init);
 RcppExport SEXP _mupp_find_crossprod_column(SEXP dim1SEXP, SEXP dim2SEXP, SEXP n_dimsSEXP, SEXP initSEXP) {
@@ -131,6 +155,8 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mupp_find_all_permutations", (DL_FUNC) &_mupp_find_all_permutations, 2},
+    {"_mupp_find_permutation_order", (DL_FUNC) &_mupp_find_permutation_order, 3},
+    {"_mupp_find_permutation_index", (DL_FUNC) &_mupp_find_permutation_index, 1},
     {"_mupp_find_crossprod_column", (DL_FUNC) &_mupp_find_crossprod_column, 4},
     {"_mupp_find_crossprod_dims", (DL_FUNC) &_mupp_find_crossprod_dims, 3},
     {"_mupp_p_mupp_rank_impl", (DL_FUNC) &_mupp_p_mupp_rank_impl, 4},

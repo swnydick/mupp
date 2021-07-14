@@ -1,6 +1,16 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+// determine order of vector (in utilities???)
+IntegerVector order_ints(IntegerVector x){
+
+  // clone the vector and sort it
+  IntegerVector sorted = clone(x).sort();
+
+  // determine which variables are sorted
+  return match(sorted, x);
+}
+
 //' Find All Permutations of Consecutive Integers
 //'
 //' Given an consecutive integer vector of length n, find all permutations of
@@ -9,6 +19,10 @@ using namespace Rcpp;
 //' @param n an integer greater than 0
 //' @param init an integer indicating the initial starting value for the set
 //'        of integers included in the permutation. See Details.
+//' @param index an integer between 1 and n indication which permutation to
+//'        select (using R indexing rather than C indexing)
+//' @param order an integer vector indicating the response/permutation order
+//'        that should be checked against
 //'
 //' @return A matrix of size n! x n, where each row is a unique permutation
 //'
@@ -18,7 +32,9 @@ using namespace Rcpp;
 //'          languages, such as R.
 //'
 //' @author Steven Nydick, \email{steven.nydick@@kornferry.com}
-//'
+//' @name permutation
+
+//' @rdname permutation
 //' @export
 // [[Rcpp::export]]
 IntegerMatrix find_all_permutations(int n,
@@ -56,6 +72,75 @@ IntegerMatrix find_all_permutations(int n,
   return all_perms;
 }
 
+// saved permutations (so we don't have to recreate this all of the time)
+List saved_permutations = List::create(find_all_permutations(1),
+                                       find_all_permutations(2),
+                                       find_all_permutations(3),
+                                       find_all_permutations(4),
+                                       find_all_permutations(5),
+                                       find_all_permutations(6));
+
+// extract save permutation (if we have it stored)
+IntegerMatrix extract_permutations(int n,
+                                   int init = 0){
+  if((n < saved_permutations.size()) & (init == 0)){
+    return saved_permutations[n - 1];
+  } else{
+    return find_all_permutations(n, init);
+  }
+}
+
+//' @rdname permutation
+//' @export
+// [[Rcpp::export]]
+IntegerVector find_permutation_order(int n,
+                                     int index = 1,
+                                     int init  = 0){
+
+  // pull out the appropriate permutation set
+  IntegerMatrix picked_orders = extract_permutations(n, init);
+
+  // Argument Checks
+  if(index < 1 | index > picked_orders.nrow()){
+    stop("index must be between 1 and n!");
+  }
+
+  // pull out the appropriate permutation
+  return picked_orders(index - 1, _);
+}
+
+//' @rdname permutation
+//' @export
+// [[Rcpp::export]]
+IntegerVector find_permutation_index(IntegerVector order){
+
+  // pull out the size of the vector
+  int n = order.length();
+
+  // determine whether the vector has any problems (NA or duplicated values)
+  bool has_problem = is_true(any(is_na(order) | duplicated(order)));
+
+  // end early and return something sensible if short length or NAs
+  if(n == 1){
+    return {1};
+  } else if((n == 0) | has_problem){
+    return {NA_INTEGER};
+  }
+
+  // pull out the appropriate permutation set and reorder vector
+  IntegerMatrix picked_orders = extract_permutations(n, 1);
+  order = order_ints(order);
+
+  // iteratively determine if any of the orders are the same
+  for(int i = 0; i < picked_orders.nrow(); i++){
+    if(is_true(all(order == picked_orders(i, _)))){
+      return {i + 1};
+    }
+  }
+
+  // return NA if something screwed up somewhere above
+  return {NA_INTEGER};
+}
 
 //' Find Column for Cross-Product
 //'
