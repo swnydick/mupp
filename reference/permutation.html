@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • mupp</title>
+<title>Find All Permutations of Consecutive Integers — permutation • mupp</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,9 @@
 
 
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Find All Permutations of Consecutive Integers — permutation" />
+<meta property="og:description" content="Given an consecutive integer vector of length n, find all permutations of
+that vector." />
 
 
 
@@ -58,7 +60,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -120,84 +122,62 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Find All Permutations of Consecutive Integers</h1>
+    <small class="dont-index">Source: <a href='https://github.com/swnydick/mupp/blob/master/R/RcppExports.R'><code>R/RcppExports.R</code></a></small>
+    <div class="hidden name"><code>permutation.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    <p>Given an consecutive integer vector of length n, find all permutations of
+that vector.</p>
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
+    <pre class="usage"><span class='fu'>find_all_permutations</span><span class='op'>(</span><span class='va'>n</span>, init <span class='op'>=</span> <span class='fl'>0L</span><span class='op'>)</span>
 
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="estimate_mupp_params.html">estimate_mupp_params()</a></code> </p>
-        </td>
-        <td><p>Estimate MUPP Parameters</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="estimate_mupp_thetas.html">estimate_mupp_thetas()</a></code> </p>
-        </td>
-        <td><p>Estimate MUPP Thetas</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="find_crossprod_column.html">find_crossprod_column()</a></code> </p>
-        </td>
-        <td><p>Find Column for Cross-Product</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="find_crossprod_dims.html">find_crossprod_dims()</a></code> </p>
-        </td>
-        <td><p>Find Dimensions given Cross-Product Column</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="permutation.html">find_all_permutations()</a></code> <code><a href="permutation.html">find_permutation_order()</a></code> <code><a href="permutation.html">find_permutation_index()</a></code> </p>
-        </td>
-        <td><p>Find All Permutations of Consecutive Integers</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prior_ggum.html">d_thetas_prior()</a></code> <code><a href="prior_ggum.html">d_alpha_prior()</a></code> <code><a href="prior_ggum.html">d_delta_prior()</a></code> <code><a href="prior_ggum.html">d_tau_prior()</a></code> <code><a href="prior_ggum.html">r_thetas_prior()</a></code> <code><a href="prior_ggum.html">r_alpha_prior()</a></code> <code><a href="prior_ggum.html">r_delta_prior()</a></code> <code><a href="prior_ggum.html">r_tau_prior()</a></code> </p>
-        </td>
-        <td><p>Prior GGUM Distributions</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="simulate_mupp_params.html">simulate_mupp_params()</a></code> </p>
-        </td>
-        <td><p>Simulate MUPP Parameters</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="simulate_mupp_resp.html">simulate_mupp_resp()</a></code> </p>
-        </td>
-        <td><p>Simulate MUPP Responses</p></td>
-      </tr>
-    </tbody>
+<span class='fu'>find_permutation_order</span><span class='op'>(</span><span class='va'>n</span>, index <span class='op'>=</span> <span class='fl'>1L</span>, init <span class='op'>=</span> <span class='fl'>0L</span><span class='op'>)</span>
+
+<span class='fu'>find_permutation_index</span><span class='op'>(</span><span class='va'>order</span><span class='op'>)</span></pre>
+
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>n</th>
+      <td><p>an integer greater than 0</p></td>
+    </tr>
+    <tr>
+      <th>init</th>
+      <td><p>an integer indicating the initial starting value for the set
+of integers included in the permutation. See Details.</p></td>
+    </tr>
+    <tr>
+      <th>index</th>
+      <td><p>an integer between 1 and n indication which permutation to
+select (using R indexing rather than C indexing)</p></td>
+    </tr>
+    <tr>
+      <th>order</th>
+      <td><p>an integer vector indicating the response/permutation order
+that should be checked against</p></td>
+    </tr>
     </table>
-  </div>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A matrix of size n! x n, where each row is a unique permutation</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p><code>init</code> is useful for indexing C vs R code. If <code>init = 0</code>,
+then the indices will work with 0 indexed languages, such as C or
+Python. If <code>init = 1</code>, then the indices will work with 1 indexed
+languages, such as R.</p>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Steven Nydick, <a href='mailto:steven.nydick@kornferry.com'>steven.nydick@kornferry.com</a></p>
+
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>
