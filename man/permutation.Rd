@@ -19,14 +19,18 @@ find_permutation_index(order)
 \item{init}{an integer indicating the initial starting value for the set
 of integers included in the permutation. See Details.}
 
-\item{index}{an integer between 1 and n indication which permutation to
+\item{index}{an integer between 1 and n indicatng which permutation to
 select (using R indexing rather than C indexing)}
 
 \item{order}{an integer vector indicating the response/permutation order
 that should be checked against}
 }
 \value{
-A matrix of size n! x n, where each row is a unique permutation
+For \code{find_all_permutations}, a A matrix of size n! x n, where each
+row is a unique permutation. For \code{find_permutation_order}, the
+index row into the permutation matrix (where "index" uses R indexing).
+For \code{find_permutation_index} the index of the permutation matrix
+that leads to a particular order.
 }
 \description{
 Given an consecutive integer vector of length n, find all permutations of
@@ -37,6 +41,14 @@ that vector.
 then the indices will work with 0 indexed languages, such as C or
 Python. If \code{init = 1}, then the indices will work with 1 indexed
 languages, such as R.
+}
+\note{
+\code{find_permutation_order} and \code{find_permutation_index} both use R indexing
+for determining the row in the permutation matrix and are almost
+inverses of each other. The reason they are "almost" inverses and not
+true inverses is because \code{find_permutation_index} needs only an
+integer vector and will standardize that vector to be between 1 and
+n. Therefore, the order is unique only up to a monotonic transformation.
 }
 \author{
 Steven Nydick, \email{steven.nydick@kornferry.com}

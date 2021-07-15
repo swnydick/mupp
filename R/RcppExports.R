@@ -9,12 +9,23 @@
 #' @param n an integer greater than 0
 #' @param init an integer indicating the initial starting value for the set
 #'        of integers included in the permutation. See Details.
-#' @param index an integer between 1 and n indication which permutation to
+#' @param index an integer between 1 and n indicatng which permutation to
 #'        select (using R indexing rather than C indexing)
 #' @param order an integer vector indicating the response/permutation order
 #'        that should be checked against
 #'
-#' @return A matrix of size n! x n, where each row is a unique permutation
+#' @return For `find_all_permutations`, a A matrix of size n! x n, where each
+#'         row is a unique permutation. For `find_permutation_order`, the
+#'         index row into the permutation matrix (where "index" uses R indexing).
+#'         For `find_permutation_index` the index of the permutation matrix
+#'         that leads to a particular order.
+#'
+#' @note `find_permutation_order` and `find_permutation_index` both use R indexing
+#'       for determining the row in the permutation matrix and are almost
+#'       inverses of each other. The reason they are "almost" inverses and not
+#'       true inverses is because `find_permutation_index` needs only an
+#'       integer vector and will standardize that vector to be between 1 and
+#'       n. Therefore, the order is unique only up to a monotonic transformation.
 #'
 #' @details \code{init} is useful for indexing C vs R code. If \code{init = 0},
 #'          then the indices will work with 0 indexed languages, such as C or

@@ -1,6 +1,6 @@
 Package: mupp
 Title: Multi-Unidimensional Pairwise Preference (MUPP) IRT Model
-Version: 0.0.2
+Version: 0.0.2.9000
 Authors@R: c(person(given   = "Steven",
                     family  = "Nydick",
                     email   = "swnydick@gmail.com",

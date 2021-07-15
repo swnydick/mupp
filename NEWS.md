@@ -1,3 +1,8 @@
+# mupp 0.0.2.9000
+
+* `find_permutation_order` and `find_permutation_index` added to map the
+  permutation number to the actual permutation values and vice versa.
+
 # mupp 0.0.2
 
 * Updated LICENSE to MIT to make publishing on Github/CRAN easier in the long
@@ -9,8 +14,6 @@
 * Fixed overall documentation and standardized package documentation.
 * Fixed test cases by adding seeds to reduce random noise, and fixed some style 
   issues.
-* `find_permutation_order` and `find_permutation_index` added to map the
-  permutation number to the actual permutation values and vice versa.
 * `cpp_profiler_tools.cpp` removed due to compilation issues on remote
   systems.
 

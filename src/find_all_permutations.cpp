@@ -1,14 +1,14 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// determine order of vector (in utilities???)
-IntegerVector order_ints(IntegerVector x){
+// determine rank of vector (in utilities???)
+IntegerVector rank_ints(IntegerVector x){
 
   // clone the vector and sort it
   IntegerVector sorted = clone(x).sort();
 
   // determine which variables are sorted
-  return match(sorted, x);
+  return match(x, sorted);
 }
 
 //' Find All Permutations of Consecutive Integers
@@ -19,12 +19,23 @@ IntegerVector order_ints(IntegerVector x){
 //' @param n an integer greater than 0
 //' @param init an integer indicating the initial starting value for the set
 //'        of integers included in the permutation. See Details.
-//' @param index an integer between 1 and n indication which permutation to
+//' @param index an integer between 1 and n indicatng which permutation to
 //'        select (using R indexing rather than C indexing)
 //' @param order an integer vector indicating the response/permutation order
 //'        that should be checked against
 //'
-//' @return A matrix of size n! x n, where each row is a unique permutation
+//' @return For `find_all_permutations`, a A matrix of size n! x n, where each
+//'         row is a unique permutation. For `find_permutation_order`, the
+//'         index row into the permutation matrix (where "index" uses R indexing).
+//'         For `find_permutation_index` the index of the permutation matrix
+//'         that leads to a particular order.
+//'
+//' @note `find_permutation_order` and `find_permutation_index` both use R indexing
+//'       for determining the row in the permutation matrix and are almost
+//'       inverses of each other. The reason they are "almost" inverses and not
+//'       true inverses is because `find_permutation_index` needs only an
+//'       integer vector and will standardize that vector to be between 1 and
+//'       n. Therefore, the order is unique only up to a monotonic transformation.
 //'
 //' @details \code{init} is useful for indexing C vs R code. If \code{init = 0},
 //'          then the indices will work with 0 indexed languages, such as C or
@@ -78,12 +89,14 @@ List saved_permutations = List::create(find_all_permutations(1),
                                        find_all_permutations(3),
                                        find_all_permutations(4),
                                        find_all_permutations(5),
-                                       find_all_permutations(6));
+                                       find_all_permutations(6),
+                                       find_all_permutations(7));
 
 // extract save permutation (if we have it stored)
 IntegerMatrix extract_permutations(int n,
                                    int init = 0){
-  if((n < saved_permutations.size()) & (init == 0)){
+
+  if((n <= saved_permutations.size()) & (init == 0)){
     return saved_permutations[n - 1];
   } else{
     return find_all_permutations(n, init);
@@ -128,8 +141,8 @@ IntegerVector find_permutation_index(IntegerVector order){
   }
 
   // pull out the appropriate permutation set and reorder vector
-  IntegerMatrix picked_orders = extract_permutations(n, 1);
-  order = order_ints(order);
+  IntegerMatrix picked_orders = extract_permutations(n);
+  order = rank_ints(order) - 1;
 
   // iteratively determine if any of the orders are the same
   for(int i = 0; i < picked_orders.nrow(); i++){
