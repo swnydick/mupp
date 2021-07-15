@@ -154,7 +154,7 @@ of integers included in the permutation. See Details.</p></td>
     </tr>
     <tr>
       <th>index</th>
-      <td><p>an integer between 1 and n indication which permutation to
+      <td><p>an integer between 1 and n indicatng which permutation to
 select (using R indexing rather than C indexing)</p></td>
     </tr>
     <tr>
@@ -166,13 +166,25 @@ that should be checked against</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A matrix of size n! x n, where each row is a unique permutation</p>
+    <p>For <code>find_all_permutations</code>, a A matrix of size n! x n, where each
+row is a unique permutation. For <code>find_permutation_order</code>, the
+index row into the permutation matrix (where "index" uses R indexing).
+For <code>find_permutation_index</code> the index of the permutation matrix
+that leads to a particular order.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p><code>init</code> is useful for indexing C vs R code. If <code>init = 0</code>,
 then the indices will work with 0 indexed languages, such as C or
 Python. If <code>init = 1</code>, then the indices will work with 1 indexed
 languages, such as R.</p>
+    <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
+
+    <p><code>find_permutation_order</code> and <code>find_permutation_index</code> both use R indexing
+for determining the row in the permutation matrix and are almost
+inverses of each other. The reason they are "almost" inverses and not
+true inverses is because <code>find_permutation_index</code> needs only an
+integer vector and will standardize that vector to be between 1 and
+n. Therefore, the order is unique only up to a monotonic transformation.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Steven Nydick, <a href='mailto:steven.nydick@kornferry.com'>steven.nydick@kornferry.com</a></p>
